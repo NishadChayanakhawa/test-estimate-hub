@@ -1,0 +1,42 @@
+[
+	{
+		"username": "admin",
+		"password": "admin",
+		"firstName": "Admin",
+		"lastName": "LNU",
+		"email": "admin@company.com",
+		"roles": [
+			"ADMIN","TESTER"
+		]
+	},
+	{
+		"username": "testManager",
+		"password": "testManager",
+		"firstName": "Test Manager",
+		"lastName": "LNU",
+		"email": "test.manager@company.com",
+		"roles": [
+			"TEST_MANAGER","TESTER"
+		]
+	}	,
+	{
+		"username": "testLead",
+		"password": "testLead",
+		"firstName": "Test Lead",
+		"lastName": "LNU",
+		"email": "test.lead@company.com",
+		"roles": [
+			"TEST_LEAD","TESTER"
+		]
+	},
+	{
+		"username": "tester",
+		"password": "tester",
+		"firstName": "Tester",
+		"lastName": "LNU",
+		"email": "tester@company.com",
+		"roles": [
+			"TESTER","TESTER"
+		]
+	}
+]

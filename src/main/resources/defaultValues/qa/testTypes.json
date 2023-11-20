@@ -1,0 +1,20 @@
+[
+	{
+		"name": "System Integration Test",
+		"relativeTestCaseCountPercentage": 100,
+		"reExecutionPercentage": 20,
+		"additionalCycleExecutionPercentage": 20
+	},
+	{
+		"name": "Regression Test",
+		"relativeTestCaseCountPercentage": 40,
+		"reExecutionPercentage": 10,
+		"additionalCycleExecutionPercentage": 10
+	},
+	{
+		"name": "User Acceptance Test",
+		"relativeTestCaseCountPercentage": 20,
+		"reExecutionPercentage": 5,
+		"additionalCycleExecutionPercentage": 5
+	}
+]
