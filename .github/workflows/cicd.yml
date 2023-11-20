@@ -49,6 +49,9 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Test API
+        run: mvn clean compile
+
       - name: Download Maven artifacts
         uses: actions/download-artifact@v2
         with:
@@ -61,7 +64,6 @@ jobs:
 
   UI-Test:
     runs-on: ubuntu-latest
-    needs: API-Test
     steps:
     - name: Checkout Code
       uses: actions/checkout@v3
