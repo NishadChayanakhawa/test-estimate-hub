@@ -1,0 +1,26 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<suite name="Test Estimate Hub API Tests" parallel="tests" thread-count="5">
+	<listeners>
+		<listener
+			class-name="io.nishadc.automationtestingframework.testngcustomization.ReportGenerator"></listener>
+	</listeners>
+	<test name="API Tests : User Management" parallel="methods" thread-count="1">
+		<classes>
+			<class
+				name="io.github.nishadchayanakhawa.testestimatehub.tests.apitests.UserManagementApiTests" />
+		</classes>
+	</test>
+	<test name="Coverage Tests" parallel="methods" thread-count="1">
+		<classes>
+			<class
+				name="io.github.nishadchayanakhawa.testestimatehub.tests.apitests.CoverageTests" />
+		</classes>
+	</test>
+	<test name="Controller Tests" parallel="methods" thread-count="1">
+		<classes>
+			<class
+				name="io.github.nishadchayanakhawa.testestimatehub.tests.apitests.ControllerTests" />
+		</classes>
+	</test>
+</suite>

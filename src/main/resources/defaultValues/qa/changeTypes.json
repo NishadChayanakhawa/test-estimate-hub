@@ -1,0 +1,23 @@
+[
+	{
+		"name": "Major",
+		"testCaseCountModifier": 1,
+		"testPlanningEffortAllocationPercentage": 20,
+		"testPreparationEffortAllocationPercentage": 20,
+		"managementEffortAllocationPercentage": 10
+	},
+	{
+		"name": "Minor",
+		"testCaseCountModifier": 0.8,
+		"testPlanningEffortAllocationPercentage": 5,
+		"testPreparationEffortAllocationPercentage": 10,
+		"managementEffortAllocationPercentage": 8
+	},
+	{
+		"name": "Incident",
+		"testCaseCountModifier": 0.4,
+		"testPlanningEffortAllocationPercentage": 0,
+		"testPreparationEffortAllocationPercentage": 5,
+		"managementEffortAllocationPercentage": 5
+	}
+]

@@ -4,8 +4,8 @@ import io.cucumber.testng.AbstractTestNGCucumberTests;
 import io.cucumber.testng.CucumberOptions;
 
 @CucumberOptions(
-		features = "src/test/resources/Features/01_UserManagementApiTests.feature",
+		features = "src/test/resources/Features/00_ControllerTests.feature",
 		glue = "io.nishadc.automationtestingframework.testinginterface.restapi.stepdefinitions",
 		tags="not @disabled")
-public class UserManagementApiTests extends AbstractTestNGCucumberTests{
+public class ControllerTests extends AbstractTestNGCucumberTests{
 }

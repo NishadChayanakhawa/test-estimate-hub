@@ -1,0 +1,32 @@
+[
+	{
+		"application": "TEH",
+		"module": "Configuration",
+		"subModule": "General Configuration",
+		"baseTestScriptCount": 3
+	},
+	{
+		"application": "TEH",
+		"module": "Record Management",
+		"subModule": "Release Record Management",
+		"baseTestScriptCount": 6
+	},
+	{
+		"application": "TEH",
+		"module": "Record Management",
+		"subModule": "Change Record Management",
+		"baseTestScriptCount": 6
+	},
+	{
+		"application": "TEH",
+		"module": "Record Management",
+		"subModule": "Use Case Record Management",
+		"baseTestScriptCount": 8
+	},
+	{
+		"application": "TEH",
+		"module": "Record Management",
+		"subModule": "Estimation Record Management",
+		"baseTestScriptCount": 12
+	}
+]

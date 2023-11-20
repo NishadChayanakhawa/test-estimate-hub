@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:insert="~{BasePage :: headSection(title=~{::title/text()},script=~{::script},style=~{::style},link=~{::link})}"
+	th:remove="tag">
+	<title>Test Estimate Hub</title>
+	<script>
+		$(document).ready(function() {
+			var csrfToken=$("input#csrf").val();
+		});
+	</script>
+</head>
+
+<body>
+	<nav th:replace="~{BasePage :: pageHeader(subTitle='Home')}"></nav>
+
+	<div class="px-4 py-5 my-5 text-center">
+		<img class="d-block mx-auto mb-4" th:src="@{/publicContent/images/hero_logo.png}" alt="Logo">
+		<h1 class="display-5 fw-bold">Welcome to Test Estimate Hub</h1>
+		<div class="col-lg-6 mx-auto">
+			<hr>
+			<p class="lead mb-4">
+				Test Estimate Hub offers Estimation & Scheduling solution for Software Teating Projects. Application allows testers to calculate test estimates based on details related to Requirement. Testers can save the estimate records, so that Test Lead can review the same.
+				As a Test Lead, you can review and modify the estimates and then mark the same as finalized. Also, based on availability, Resources can be assigned to estimated work.
+				Along with Estimation and Scheduling functionality, Application offers intuitive dashboards to review allocation and Demand Vs Supply view.
+				<br>
+				Please use menu bar to select intended action.
+			</p>
+		</div>
+	</div>
+</body>
+
+</html>
