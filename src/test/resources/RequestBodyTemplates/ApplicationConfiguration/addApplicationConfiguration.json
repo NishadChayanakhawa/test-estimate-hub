@@ -1,0 +1,6 @@
+{
+	"application" : "TEH",
+	"module" : "Config",
+	"subModule" : "User",
+	"baseTestScriptCount" : 5
+}

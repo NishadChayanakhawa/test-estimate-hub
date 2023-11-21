@@ -1,0 +1,7 @@
+{
+	"id" : "${id}",
+	"application" : "TEH",
+	"module" : "Configuration",
+	"subModule" : "User Management",
+	"baseTestScriptCount" : 7
+}
