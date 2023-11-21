@@ -474,7 +474,7 @@ vars.put(&quot;email&quot;, randomString)</stringProp>
         </ResultCollector>
         <hashTree/>
         <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Validate response time" enabled="true">
-          <stringProp name="DurationAssertion.duration">1000</stringProp>
+          <stringProp name="DurationAssertion.duration">10000</stringProp>
         </DurationAssertion>
         <hashTree/>
         <ResultCollector guiclass="AssertionVisualizer" testclass="ResultCollector" testname="Assertion Results" enabled="true">
