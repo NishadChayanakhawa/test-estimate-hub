@@ -145,7 +145,7 @@ jobs:
     - name: Archive performance test results
       uses: actions/upload-artifact@v3
       with:
-        name: api-test-report
+        name: performance-test-results
         path: target/jmeter/results/*.csv
   
   Deploy-PROD-Docker:
