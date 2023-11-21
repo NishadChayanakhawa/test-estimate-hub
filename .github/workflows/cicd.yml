@@ -57,7 +57,7 @@ jobs:
         name: ui-test-report.html
         path: target/TestExecutionReport.html
         
-  Deploy-QA-Docker:
+  Deploy-Dev-Docker:
     runs-on: ubuntu-latest
     needs: [API-Test-and-Code-Quality-Gate,UI-Test]
     if: github.ref == 'refs/heads/master'
@@ -72,7 +72,7 @@ jobs:
         distribution: 'temurin'
         
     - name: Test
-      run: mvn clean install -Pqa -DskipTests=true -DskipCodeCoverageCheck=true
+      run: mvn clean install -Pdev -DskipTests=true -DskipCodeCoverageCheck=true
 
     - name: Login to Docker Hub
       uses: docker/login-action@v2
@@ -88,11 +88,11 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/test-estimate-hub:latest-qa
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/test-estimate-hub:latest-dev
 
-  Deploy-QA-Application:
+  Deploy-Dev-Application:
     runs-on: ubuntu-latest
-    needs: Deploy-QA-Docker
+    needs: Deploy-Dev-Docker
     steps:
     - name: executing remote ssh commands using password
       uses: appleboy/ssh-action@v0.1.10
