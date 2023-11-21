@@ -19,6 +19,12 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
+
+    - name: Setup Maven Action
+      uses: s4u/setup-maven-action@v1.10
+      with:
+        java-version: 17
+        maven-version: 3.9.4
         
     - name: Test API
       run: mvn clean verify -Pdev
