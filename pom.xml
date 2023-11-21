@@ -178,6 +178,37 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>com.lazerycode.jmeter</groupId>
+				<artifactId>jmeter-maven-plugin</artifactId>
+				<version>3.8.0</version>
+				<configuration>
+					<skipTests>${skipPT}</skipTests>
+				</configuration>
+				<executions>
+					<!-- Generate JMeter configuration -->
+					<execution>
+						<id>configuration</id>
+						<goals>
+							<goal>configure</goal>
+						</goals>
+					</execution>
+					<!-- Run JMeter tests -->
+					<execution>
+						<id>jmeter-tests</id>
+						<goals>
+							<goal>jmeter</goal>
+						</goals>
+					</execution>
+					<!-- Fail build on errors in test -->
+					<execution>
+						<id>jmeter-check-results</id>
+						<goals>
+							<goal>results</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -317,6 +348,7 @@
 			<properties>
 				<skipCodeCoverageCheck>false</skipCodeCoverageCheck>
 				<skipTests>false</skipTests>
+				<skipPT>true</skipPT>
 				<spring.profiles.active>dev</spring.profiles.active>
 				<testng.suiteXmlFile.name>api-tests-testng.xml</testng.suiteXmlFile.name>
 			</properties>
@@ -331,6 +363,7 @@
 			<properties>
 				<skipCodeCoverageCheck>true</skipCodeCoverageCheck>
 				<skipTests>false</skipTests>
+				<skipPT>true</skipPT>
 				<spring.profiles.active>qa</spring.profiles.active>
 				<testng.suiteXmlFile.name>ui-tests-testng.xml</testng.suiteXmlFile.name>
 			</properties>
@@ -345,7 +378,22 @@
 			<properties>
 				<skipCodeCoverageCheck>true</skipCodeCoverageCheck>
 				<skipTests>true</skipTests>
+				<skipPT>true</skipPT>
 				<spring.profiles.active>prod</spring.profiles.active>
+			</properties>
+		</profile>
+		<profile>
+			<id>performance-test</id>
+			<activation>
+				<property>
+					<name>performance-test</name>
+				</property>
+			</activation>
+			<properties>
+				<skipCodeCoverageCheck>true</skipCodeCoverageCheck>
+				<skipTests>true</skipTests>
+				<skipPT>false</skipPT>
+				<spring.profiles.active>dev</spring.profiles.active>
 			</properties>
 		</profile>
 	</profiles>
