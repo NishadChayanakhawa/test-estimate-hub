@@ -141,6 +141,7 @@ jobs:
       run: mvn clean verify -Pperformance-test
 
     - name: Archive performance test results
+      if: always()
       uses: actions/upload-artifact@v3
       with:
         name: performance-test-results
