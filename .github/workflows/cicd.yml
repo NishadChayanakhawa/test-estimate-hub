@@ -90,6 +90,18 @@ jobs:
         push: true
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/test-estimate-hub:latest-qa
 
+  Deploy-QA-Application:
+    runs-on: ubuntu-latest
+    needs: Deploy-QA-Docker
+    steps:
+    - name: executing remote ssh commands using password
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USERNAME }}
+        password: ${{ secrets.VPS_PASSWORD }}
+        script: echo ${{ secrets.VPS_PASSWORD }} | sudo -S ./my-apps/teh/deploy-teh-qa.sh
+
   Deploy-PROD-Docker:
     runs-on: ubuntu-latest
     needs: [API-Test-and-Code-Quality-Gate,UI-Test]
