@@ -100,7 +100,7 @@ jobs:
         host: ${{ secrets.VPS_HOST }}
         username: ${{ secrets.VPS_USERNAME }}
         password: ${{ secrets.VPS_PASSWORD }}
-        script: echo ${{ secrets.VPS_PASSWORD }} | sudo -S ./my-apps/teh/deploy-teh-qa.sh
+        script: echo ${{ secrets.VPS_PASSWORD }} | sudo -S ./my-apps/teh/deploy-teh-dev.sh
 
   Deploy-PROD-Docker:
     runs-on: ubuntu-latest
