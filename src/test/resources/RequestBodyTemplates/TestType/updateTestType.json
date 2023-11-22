@@ -1,0 +1,7 @@
+{
+	"id" : "${id}",
+	"name" : "UAT",
+	"relativeTestCaseCountPercentage" : 21,
+	"reExecutionPercentage" : 11,
+	"additionalCycleExecutionPercentage" : 6	
+}

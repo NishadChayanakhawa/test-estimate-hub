@@ -15,9 +15,11 @@ import org.springframework.stereotype.Component;
 import io.github.nishadchayanakhawa.testestimatehub.model.dto.UserDTO;
 import io.github.nishadchayanakhawa.testestimatehub.model.dto.ApplicationConfigurationDTO;
 import io.github.nishadchayanakhawa.testestimatehub.model.dto.ChangeTypeDTO;
+import io.github.nishadchayanakhawa.testestimatehub.model.dto.TestTypeDTO;
 import io.github.nishadchayanakhawa.testestimatehub.services.UserService;
 import io.github.nishadchayanakhawa.testestimatehub.services.ApplicationConfigurationService;
 import io.github.nishadchayanakhawa.testestimatehub.services.ChangeTypeService;
+import io.github.nishadchayanakhawa.testestimatehub.services.TestTypeService;
 import io.github.nishadchayanakhawa.testestimatehub.services.exceptions.TestEstimateHubExceptions;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -44,14 +46,17 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
 	private UserService userService;
 	private ApplicationConfigurationService applicationConfigurationService;
 	private ChangeTypeService changeTypeService;
+	private TestTypeService testTypeService;
 
 	@Autowired
 	public CommandLineAppStartupRunner(UserService userService,
 			ApplicationConfigurationService applicationConfigurationService,
-			ChangeTypeService changeTypeService) {
+			ChangeTypeService changeTypeService,
+			TestTypeService testTypeService) {
 		this.userService = userService;
 		this.applicationConfigurationService = applicationConfigurationService;
 		this.changeTypeService=changeTypeService;
+		this.testTypeService=testTypeService;
 	}
 
 	@Override
@@ -60,6 +65,7 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
 			loadDefaultUser();
 			loadDefaultApplicationConfiguration();
 			loadDefaultChangeTypes();
+			loadDefaultTestTypes();
 			logger.info("Application started. Please navigate to http://localhost:8999/login");
 		} catch (Exception e) {
 			throw new TestEstimateHubExceptions(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR,
@@ -93,13 +99,26 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
 	
 	private void loadDefaultChangeTypes() throws IOException {
 		if (changeTypeService.getAll().isEmpty()) {
-			logger.warn("No change records found. Default records will be created.");
+			logger.warn("No change type records found. Default records will be created.");
 			ChangeTypeDTO[] changeTypes = objectMapper
 					.readValue(changeTypeRecords.getContentAsByteArray(), ChangeTypeDTO[].class);
 			List.of(changeTypes).stream().forEach(changeType -> {
 				ChangeTypeDTO savedChangeType = this.changeTypeService
 						.save(changeType);
-				logger.info("Application Configuration Saved: {}", savedChangeType);
+				logger.info("Change Type Saved: {}", savedChangeType);
+			});
+		}
+	}
+	
+	private void loadDefaultTestTypes() throws IOException {
+		if (testTypeService.getAll().isEmpty()) {
+			logger.warn("No test type records found. Default records will be created.");
+			TestTypeDTO[] testTypes = objectMapper
+					.readValue(testTypeRecords.getContentAsByteArray(), TestTypeDTO[].class);
+			List.of(testTypes).stream().forEach(testType -> {
+				TestTypeDTO savedTestType = this.testTypeService
+						.save(testType);
+				logger.info("Test Type Saved: {}", savedTestType);
 			});
 		}
 	}

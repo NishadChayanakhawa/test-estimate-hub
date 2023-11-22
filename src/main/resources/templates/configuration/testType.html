@@ -4,19 +4,20 @@
 <head th:insert="~{BasePage :: headSection(title=~{::title/text()},script=~{::script},style=~{::style},link=~{::link})}"
 	th:remove="tag">
 	<title>Test Estimate Hub</title>
-	<script th:src="@{/application/js/configuration/applicationConfigurationProcessing.js}"></script>
+
+	<script th:src="@{/application/js/configuration/testTypeConfigurationProcessing.js}"></script>
 
 	<script>
 		$(document).ready(function () {
-			applicationConfigurationProcessing.init();
+			testTypeConfigurationProcessing.init();
 		});
 	</script>
 	<script id="recordListTemplate" type="text/template" sec:authorize="hasRole('ROLE_ADMIN')">
 		<tr>
-			<td id="recordIdentifier_${id}_1">${application}</td>
-			<td id="recordIdentifier_${id}_2">${module}</td>
-			<td id="recordIdentifier_${id}_3">${subModule}</td>
-			<td>${baseTestScriptCount}</td>
+			<td id="recordIdentifier_${id}_1">${name}</td>
+			<td>${relativeTestCaseCountPercentage}</td>
+			<td>${reExecutionPercentage}</td>
+			<td>${additionalCycleExecutionPercentage}</td>
 			<td>
 				<button class="border-0 bg-transparent" id="editRecordButton_${id}">
 					<i class="fa fa-edit"></i> Edit
@@ -29,10 +30,10 @@
 	</script>
 	<script id="recordListTemplate" type="text/template" sec:authorize="hasRole('ROLE_TEST_MANAGER')">
 		<tr>
-			<td id="recordIdentifier_${id}_1">${application}</td>
-			<td id="recordIdentifier_${id}_2">${module}</td>
-			<td id="recordIdentifier_${id}_3">${subModule}</td>
-			<td>${baseTestScriptCount}</td>
+			<td id="recordIdentifier_${id}_1">${name}</td>
+			<td>${relativeTestCaseCountPercentage}</td>
+			<td>${reExecutionPercentage}</td>
+			<td>${additionalCycleExecutionPercentage}</td>
 		</tr>
 	</script>
 </head>
@@ -40,20 +41,22 @@
 <body>
 	<input th:replace="~{BasePage :: csrfElement}" />
 
-	<nav th:replace="~{BasePage :: pageHeader(subTitle='Application Configuration')}"></nav>
+	<nav th:replace="~{BasePage :: pageHeader(subTitle='Test Type Configuration')}"></nav>
 
 	<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel"
 		aria-hidden="true">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h1 class="modal-title fs-5" id="deleteConfirmationModalLabel">Delete Application Configuration Record</h1>
+					<h1 class="modal-title fs-5" id="deleteConfirmationModalLabel">Delete User
+						Record</h1>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
 					<form id="deleteRecordForm">
 						<input type="hidden" class="form-control" id="deleteRecordId" name="id" required />
-						Confirm delete operation for '<span class="fw-bold text-danger" id="deleteRecordIdentifierDisplay"></span>'
+						Confirm delete operation for '<span class="fw-bold text-danger"
+							id="deleteRecordIdentifierDisplay"></span>'
 						<hr>
 						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 						<button id="confirmDeleteOperation" type="submit" class="btn btn-danger">Confirm Delete</button>
@@ -63,34 +66,39 @@
 		</div>
 	</div>
 
-	<div class="modal fade modal-lg" id="putRecordModal" tabindex="-1" aria-labelledby="putRecordModalLabel" aria-hidden="true">
+	<div class="modal fade modal-lg" id="putRecordModal" tabindex="-1" aria-labelledby="putRecordModalLabel"
+		aria-hidden="true">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h1 class="modal-title fs-5" id="putRecordModalLabel">Application Configuration Record</h1>
+					<h1 class="modal-title fs-5" id="putRecordModalLabel">Change Type Record</h1>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
 					<form id="putRecordForm" autocomplete="off">
 						<input type="hidden" class="form-control" id="id" name="id" />
 						<div class="form-floating mb-3">
-							<input type="text" class="form-control" id="application" name="application" required />
-							<label for="application">Application</label>
+							<input type="text" class="form-control" id="name" name="name" required />
+							<label for="name">Name</label>
 						</div>
 						<div class="form-floating mb-3">
-							<input type="text" class="form-control" id="module" name="module" required />
-							<label for="module">Module</label>
+							<input type="text" class="form-control" id="relativeTestCaseCountPercentage"
+								name="relativeTestCaseCountPercentage" required />
+							<label for="relativeTestCaseCountPercentage">Relative Test Case Count %</label>
 						</div>
 						<div class="form-floating mb-3">
-							<input type="text" class="form-control" id="subModule" name="subModule" required />
-							<label for="subModule">Sub-Module</label>
+							<input type="text" class="form-control" id="reExecutionPercentage"
+								name="reExecutionPercentage" required />
+							<label for="reExecutionPercentage">Re-execution %</label>
 						</div>
 						<div class="form-floating mb-3">
-							<input type="text" class="form-control constraint-numeric" id="baseTestScriptCount" name="baseTestScriptCount" required />
-							<label for="baseTestScriptCount">Base Test Case Count</label>
+							<input type="text" class="form-control" id="additionalCycleExecutionPercentage"
+								name="additionalCycleExecutionPercentage" required />
+							<label for="additionalCycleExecutionPercentage">Additional Cycle Execution %</label>
 						</div>
 						<hr>
-						<button id="dismissModal" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+						<button id="dismissModal" type="button" class="btn btn-secondary"
+							data-bs-dismiss="modal">Close</button>
 						<button id="saveRecordButton" type="submit" class="btn btn-primary">Save changes</button>
 					</form>
 				</div>
@@ -99,19 +107,20 @@
 	</div>
 
 	<div class="p-3" id="recordContent">
-		<button class="btn btn-sm btn-primary" id="addRecordButton" sec:authorize="hasRole('ROLE_ADMIN')" data-bs-toggle="modal" data-bs-target="#putRecordModal">
-			<i class="fa fa-plus"></i> Add Application Configuration Record
+		<button class="btn btn-sm btn-primary" id="addRecordButton" sec:authorize="hasRole('ROLE_ADMIN')"
+			data-bs-toggle="modal" data-bs-target="#putRecordModal">
+			<i class="fa fa-plus"></i> Add Change Type Record
 		</button>
 		<br>
 		<br>
 		<table class="table table-striped" id="recordTable">
-			<caption>Application Configuration Records</caption>
+			<caption>User Records</caption>
 			<thead>
 				<tr id="recordTableHeader">
-					<th>Application</th>
-					<th>Module</th>
-					<th>Sub-Module</th>
-					<th>Base Test Script Count</th>
+					<th>Name</th>
+					<th>Relative Test Case Count %</th>
+					<th>Re-execution %</th>
+					<th>Additional Cycle Execution %</th>
 					<th sec:authorize="hasRole('ROLE_ADMIN')">Actions</th>
 				</tr>
 			</thead>
