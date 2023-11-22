@@ -14,13 +14,15 @@ import org.springframework.stereotype.Component;
 
 import io.github.nishadchayanakhawa.testestimatehub.model.dto.UserDTO;
 import io.github.nishadchayanakhawa.testestimatehub.model.dto.ApplicationConfigurationDTO;
+import io.github.nishadchayanakhawa.testestimatehub.model.dto.ChangeTypeDTO;
 import io.github.nishadchayanakhawa.testestimatehub.services.UserService;
 import io.github.nishadchayanakhawa.testestimatehub.services.ApplicationConfigurationService;
+import io.github.nishadchayanakhawa.testestimatehub.services.ChangeTypeService;
 import io.github.nishadchayanakhawa.testestimatehub.services.exceptions.TestEstimateHubExceptions;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
-@Profile("qa")
+@Profile("!dev")
 public class CommandLineAppStartupRunner implements CommandLineRunner {
 	private static final ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory
 			.getLogger(CommandLineAppStartupRunner.class);
@@ -41,12 +43,15 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
 
 	private UserService userService;
 	private ApplicationConfigurationService applicationConfigurationService;
+	private ChangeTypeService changeTypeService;
 
 	@Autowired
 	public CommandLineAppStartupRunner(UserService userService,
-			ApplicationConfigurationService applicationConfigurationService) {
+			ApplicationConfigurationService applicationConfigurationService,
+			ChangeTypeService changeTypeService) {
 		this.userService = userService;
 		this.applicationConfigurationService = applicationConfigurationService;
+		this.changeTypeService=changeTypeService;
 	}
 
 	@Override
@@ -54,6 +59,7 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
 		try {
 			loadDefaultUser();
 			loadDefaultApplicationConfiguration();
+			loadDefaultChangeTypes();
 			logger.info("Application started. Please navigate to http://localhost:8999/login");
 		} catch (Exception e) {
 			throw new TestEstimateHubExceptions(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR,
@@ -81,6 +87,19 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
 				ApplicationConfigurationDTO savedApplicationConfiguration = this.applicationConfigurationService
 						.save(applicationConfiguration);
 				logger.info("Application Configuration Saved: {}", savedApplicationConfiguration);
+			});
+		}
+	}
+	
+	private void loadDefaultChangeTypes() throws IOException {
+		if (changeTypeService.getAll().isEmpty()) {
+			logger.warn("No change records found. Default records will be created.");
+			ChangeTypeDTO[] changeTypes = objectMapper
+					.readValue(changeTypeRecords.getContentAsByteArray(), ChangeTypeDTO[].class);
+			List.of(changeTypes).stream().forEach(changeType -> {
+				ChangeTypeDTO savedChangeType = this.changeTypeService
+						.save(changeType);
+				logger.info("Application Configuration Saved: {}", savedChangeType);
 			});
 		}
 	}

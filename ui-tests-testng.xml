@@ -19,4 +19,10 @@
 				name="io.github.nishadchayanakhawa.testestimatehub.tests.uitests.ApplicationConfigurationTests" />
 		</classes>
 	</test>
+	<test name="UI Tests : Change Type Configuration" parallel="methods" thread-count="5">
+		<classes>
+			<class
+				name="io.github.nishadchayanakhawa.testestimatehub.tests.uitests.ChangeTypeConfigurationTests" />
+		</classes>
+	</test>
 </suite>

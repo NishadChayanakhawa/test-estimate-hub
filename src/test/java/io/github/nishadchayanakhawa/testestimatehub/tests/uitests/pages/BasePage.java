@@ -111,6 +111,13 @@ public class BasePage extends ApplicationActions {
 		return new ApplicationConfigurationPage(this.driver);
 	}
 	
+	public ChangeTypeConfigurationPage navigateToChangeTypeConfiguration() {
+		this.clickNavbarTogglerIfAvailable();
+		this.clickElement(configurationLink);
+		this.clickElement(this.changeTypeConfigurationOption);
+		return new ChangeTypeConfigurationPage(this.driver);
+	}
+	
 	public String getToastMessage() {
 		String toastMessage=this.getInnerText(visibleToastMessage);
 		this.clickElement(closeToastMessage);
