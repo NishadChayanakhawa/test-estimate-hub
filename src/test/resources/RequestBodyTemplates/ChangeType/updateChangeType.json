@@ -1,0 +1,8 @@
+{
+	"id" : "${id}",
+	"name": "UAT",
+	"testCaseCountModifier": 1.1,
+	"testPlanningEffortAllocationPercentage": 21,
+	"testPreparationEffortAllocationPercentage": 31,
+	"managementEffortAllocationPercentage": 11
+}

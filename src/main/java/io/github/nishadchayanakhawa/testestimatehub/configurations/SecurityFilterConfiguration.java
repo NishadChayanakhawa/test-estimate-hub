@@ -24,6 +24,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @Service
 public class SecurityFilterConfiguration {
 	private static final String H2_CONSOLE_CONTEXT_MATCHER = "/h2-console/**";
+	private static final String CONFIGURATION_API_CONTEXT_MATCHER = TestEstimateHubConstants.CONFIGURATION_API + "/**";
 
 	@Bean
 	@Order(2)
@@ -31,14 +32,17 @@ public class SecurityFilterConfiguration {
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		return http
 				.authorizeHttpRequests(request -> request
-						.requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/configuration/**"))
-							.hasAnyRole(Role.TEST_MANAGER.toString(),Role.ADMIN.toString())
-						.requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.PUT,"/api/configuration/**"))
-							.hasRole(Role.ADMIN.toString())
-						.requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.DELETE,"/api/configuration/**"))
-							.hasRole(Role.ADMIN.toString())
-						.requestMatchers("/home")
-							.hasAnyRole(Role.ADMIN.toString(), Role.TESTER.toString(), Role.TEST_LEAD.toString(),Role.TEST_MANAGER.toString())
+						.requestMatchers(
+								AntPathRequestMatcher.antMatcher(HttpMethod.GET, CONFIGURATION_API_CONTEXT_MATCHER))
+								.hasAnyRole(Role.TEST_MANAGER.toString(), Role.ADMIN.toString())
+						.requestMatchers(
+								AntPathRequestMatcher.antMatcher(HttpMethod.PUT, CONFIGURATION_API_CONTEXT_MATCHER))
+								.hasRole(Role.ADMIN.toString())
+						.requestMatchers(
+								AntPathRequestMatcher.antMatcher(HttpMethod.DELETE, CONFIGURATION_API_CONTEXT_MATCHER))
+								.hasRole(Role.ADMIN.toString()).requestMatchers("/home")
+						.hasAnyRole(Role.ADMIN.toString(), Role.TESTER.toString(), Role.TEST_LEAD.toString(),
+								Role.TEST_MANAGER.toString())
 						.requestMatchers("/configuration/**")
 							.hasAnyRole(Role.ADMIN.toString(), Role.TEST_MANAGER.toString())
 						.requestMatchers("/login")
@@ -51,8 +55,7 @@ public class SecurityFilterConfiguration {
 						.failureUrl("/login?error=true"))
 				.logout(logout -> logout.logoutSuccessUrl("/login?logout=true").invalidateHttpSession(true)
 						.deleteCookies("JSESSIONID"))
-				.csrf().and()
-				.build();
+				.csrf().and().build();
 	}
 
 	/**
