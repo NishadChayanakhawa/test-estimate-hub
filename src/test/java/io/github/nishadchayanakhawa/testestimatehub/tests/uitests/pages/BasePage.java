@@ -104,6 +104,13 @@ public class BasePage extends ApplicationActions {
 		return new UserManagementPage(this.driver);
 	}
 	
+	public ApplicationConfigurationPage navigateToApplicationConfiguration() {
+		this.clickNavbarTogglerIfAvailable();
+		this.clickElement(configurationLink);
+		this.clickElement(applicationConfigurationOption);
+		return new ApplicationConfigurationPage(this.driver);
+	}
+	
 	public String getToastMessage() {
 		String toastMessage=this.getInnerText(visibleToastMessage);
 		this.clickElement(closeToastMessage);

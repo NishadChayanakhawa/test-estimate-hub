@@ -13,7 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import io.github.nishadchayanakhawa.testestimatehub.model.dto.UserDTO;
+import io.github.nishadchayanakhawa.testestimatehub.model.dto.ApplicationConfigurationDTO;
 import io.github.nishadchayanakhawa.testestimatehub.services.UserService;
+import io.github.nishadchayanakhawa.testestimatehub.services.ApplicationConfigurationService;
 import io.github.nishadchayanakhawa.testestimatehub.services.exceptions.TestEstimateHubExceptions;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -30,24 +32,28 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
 
 	@Value("${applicationConfiguration.records}")
 	private Resource applicationConfigurationRecords;
-	
+
 	@Value("${testType.records}")
 	private Resource testTypeRecords;
-	
+
 	@Value("${changeType.records}")
 	private Resource changeTypeRecords;
 
 	private UserService userService;
+	private ApplicationConfigurationService applicationConfigurationService;
 
 	@Autowired
-	public CommandLineAppStartupRunner(UserService userService) {
+	public CommandLineAppStartupRunner(UserService userService,
+			ApplicationConfigurationService applicationConfigurationService) {
 		this.userService = userService;
+		this.applicationConfigurationService = applicationConfigurationService;
 	}
 
 	@Override
 	public void run(String... args) {
 		try {
 			loadDefaultUser();
+			loadDefaultApplicationConfiguration();
 			logger.info("Application started. Please navigate to http://localhost:8999/login");
 		} catch (Exception e) {
 			throw new TestEstimateHubExceptions(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR,
@@ -62,6 +68,19 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
 			List.of(users).stream().forEach(user -> {
 				UserDTO savedUser = this.userService.save(user);
 				logger.info("User Saved: {}", savedUser);
+			});
+		}
+	}
+
+	private void loadDefaultApplicationConfiguration() throws IOException {
+		if (applicationConfigurationService.getAll().isEmpty()) {
+			logger.warn("No application configuration records found. Default records will be created.");
+			ApplicationConfigurationDTO[] applicationConfigurations = objectMapper
+					.readValue(applicationConfigurationRecords.getContentAsByteArray(), ApplicationConfigurationDTO[].class);
+			List.of(applicationConfigurations).stream().forEach(applicationConfiguration -> {
+				ApplicationConfigurationDTO savedApplicationConfiguration = this.applicationConfigurationService
+						.save(applicationConfiguration);
+				logger.info("Application Configuration Saved: {}", savedApplicationConfiguration);
 			});
 		}
 	}

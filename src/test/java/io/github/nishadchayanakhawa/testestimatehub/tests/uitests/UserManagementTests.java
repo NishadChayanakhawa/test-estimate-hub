@@ -3,10 +3,8 @@ package io.github.nishadchayanakhawa.testestimatehub.tests.uitests;
 import org.assertj.core.api.Assertions;
 import org.json.JSONException;
 import org.testng.annotations.Test;
-
 import io.github.nishadchayanakhawa.testestimatehub.tests.uitests.pages.LoginPage;
 import io.nishadc.automationtestingframework.testngcustomization.TestFactory;
-import io.nishadc.automationtestingframework.filehandling.JsonFileHandling;
 import io.nishadc.automationtestingframework.filehandling.exceptions.FlatFileHandlingException;
 import io.nishadc.automationtestingframework.filehandling.exceptions.JsonFileHandlingException;
 import io.nishadc.automationtestingframework.testngcustomization.annotations.Retry;
@@ -18,7 +16,6 @@ public class UserManagementTests {
 	@Test
 	public void addUser() throws JSONException, FlatFileHandlingException, JsonFileHandlingException {
 		LoginPage loginPage = LoginPage.getLoginPage();
-		System.out.println(JsonFileHandling.getJsonFileContent("src/test/resources/RequestBodyTemplates/User/addUser.json").toString(1));
 		UserDTO user = new UserDTO();
 		user.setUsername("johnd");
 		user.setPassword("johnd");

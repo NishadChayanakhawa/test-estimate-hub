@@ -13,4 +13,10 @@
 				name="io.github.nishadchayanakhawa.testestimatehub.tests.uitests.UserManagementTests" />
 		</classes>
 	</test>
+	<test name="UI Tests : Application Configuration" parallel="methods" thread-count="5">
+		<classes>
+			<class
+				name="io.github.nishadchayanakhawa.testestimatehub.tests.uitests.ApplicationConfigurationTests" />
+		</classes>
+	</test>
 </suite>
