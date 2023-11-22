@@ -33,8 +33,11 @@ public class SecurityFilterConfiguration {
 		return http
 				.authorizeHttpRequests(request -> request
 						.requestMatchers(
-								AntPathRequestMatcher.antMatcher(HttpMethod.GET, CONFIGURATION_API_CONTEXT_MATCHER))
+								AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/configuration/user"))
 								.hasAnyRole(Role.TEST_MANAGER.toString(), Role.ADMIN.toString())
+						.requestMatchers(
+								AntPathRequestMatcher.antMatcher(HttpMethod.GET, CONFIGURATION_API_CONTEXT_MATCHER))
+								.hasAnyRole(Role.TEST_LEAD.toString(),Role.TEST_MANAGER.toString(), Role.ADMIN.toString())
 						.requestMatchers(
 								AntPathRequestMatcher.antMatcher(HttpMethod.PUT, CONFIGURATION_API_CONTEXT_MATCHER))
 								.hasRole(Role.ADMIN.toString())
@@ -43,8 +46,10 @@ public class SecurityFilterConfiguration {
 								.hasRole(Role.ADMIN.toString()).requestMatchers("/home")
 						.hasAnyRole(Role.ADMIN.toString(), Role.TESTER.toString(), Role.TEST_LEAD.toString(),
 								Role.TEST_MANAGER.toString())
-						.requestMatchers("/configuration/**")
+						.requestMatchers("/configuration/userManagement")
 							.hasAnyRole(Role.ADMIN.toString(), Role.TEST_MANAGER.toString())
+						.requestMatchers("/configuration/**")
+							.hasAnyRole(Role.ADMIN.toString(), Role.TEST_MANAGER.toString(),Role.TEST_LEAD.toString())
 						.requestMatchers("/login")
 							.permitAll()
 						.requestMatchers("/publicContent/**")

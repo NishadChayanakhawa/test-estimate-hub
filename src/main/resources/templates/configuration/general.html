@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:insert="~{BasePage :: headSection(title=~{::title/text()},script=~{::script},style=~{::style},link=~{::link})}"
+	th:remove="tag">
+	<title>Test Estimate Hub</title>
+
+	<script th:src="@{/application/js/configuration/generalConfigurationProcessing.js}"></script>
+
+	<script sec:authorize="hasRole('ROLE_ADMIN')">
+		$(document).ready(function () {
+			generalConfigurationProcessing.init();
+		});
+	</script>
+	<script sec:authorize="hasAnyRole('ROLE_TEST_MANAGER','ROLE_TEST_LEAD')">
+		$(document).ready(function () {
+			generalConfigurationProcessing.init();
+			$("input").attr("readOnly",true);
+		});
+	</script>
+
+</head>
+
+<body>
+	<input th:replace="~{BasePage :: csrfElement}" />
+
+	<nav th:replace="~{BasePage :: pageHeader(subTitle='General Configuration')}"></nav>
+
+	<form id="generalConfigurationForm" autocomplete="off" class="p-4">
+		<div class="mb-3">
+			<label for="basic-url" class="form-label"><strong>Test Case Preparation Productivity</strong> for Test Cases with -</label>
+			<div class="input-group mb-3">
+				<span class="input-group-text">Very Low Complexity</span>
+				<input type="text" class="form-control constraint-numeric" id="testDesignProductivity-VERY_LOW" name="testDesignProductivity-VERY_LOW" required>
+				<span class="input-group-text">Low Complexity</span>
+				<input type="text" class="form-control constraint-numeric" id="testDesignProductivity-LOW" name="testDesignProductivity-LOW" required>
+				<span class="input-group-text">Medium Complexity</span>
+				<input type="text" class="form-control constraint-numeric" id="testDesignProductivity-MEDIUM" name="testDesignProductivity-MEDIUM" required>
+				<span class="input-group-text">High Complexity</span>
+				<input type="text" class="form-control constraint-numeric" id="testDesignProductivity-HIGH" name="testDesignProductivity-HIGH" required>
+				<span class="input-group-text">Very High Complexity</span>
+				<input type="text" class="form-control constraint-numeric" id="testDesignProductivity-VERY_HIGH" name="testDesignProductivity-VERY_HIGH" required>
+			</div>
+		</div>
+		<div class="mb-3">
+			<label for="basic-url" class="form-label"><strong>Test Case Execution Productivity</strong> for Test Cases with -</label>
+			<div class="input-group mb-3">
+				<span class="input-group-text">Very Low Complexity</span>
+				<input type="text" class="form-control constraint-numeric" id="testExecutionProductivity-VERY_LOW" name="testExecutionProductivity-VERY_LOW" required>
+				<span class="input-group-text">Low Complexity</span>
+				<input type="text" class="form-control constraint-numeric" id="testExecutionProductivity-LOW" name="testExecutionProductivity-LOW" required>
+				<span class="input-group-text">Medium Complexity</span>
+				<input type="text" class="form-control constraint-numeric" id="testExecutionProductivity-MEDIUM" name="testExecutionProductivity-MEDIUM" required>
+				<span class="input-group-text">High Complexity</span>
+				<input type="text" class="form-control constraint-numeric" id="testExecutionProductivity-HIGH" name="testExecutionProductivity-HIGH" required>
+				<span class="input-group-text">Very High Complexity</span>
+				<input type="text" class="form-control constraint-numeric" id="testExecutionProductivity-VERY_HIGH" name="testExecutionProductivity-VERY_HIGH" required>
+			</div>
+		</div>
+		<div class="mb-3">
+			<label for="basic-url" class="form-label"><strong>Complexity Weightage %</strong> for -</label>
+			<div class="input-group mb-3">
+				<span class="input-group-text">Test Configuration</span>
+				<input type="text" class="form-control constraint-numeric" id="testConfigurationComplexityPercentage" name="testConfigurationComplexityPercentage" required>
+				<span class="input-group-text">Test Data Preparation</span>
+				<input type="text" class="form-control constraint-numeric" id="testDataComplexityPercentage" name="testDataComplexityPercentage" required>
+				<span class="input-group-text">Test Transaction</span>
+				<input type="text" class="form-control constraint-numeric" id="testTransactionComplexityPercentage" name="testTransactionComplexityPercentage" required>
+				<span class="input-group-text">Test Validation</span>
+				<input type="text" class="form-control constraint-numeric" id="testValidationComplexityPercentage" name="testValidationComplexityPercentage" required>
+			</div>
+		</div>
+		<button sec:authorize="hasRole('ROLE_ADMIN')" id="saveGeneralConfigurationButton" type="submit" class="btn btn-primary">Save changes</button>
+	</form>
+
+</body>
+
+</html>

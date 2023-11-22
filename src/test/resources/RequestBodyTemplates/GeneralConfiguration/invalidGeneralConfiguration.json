@@ -1,0 +1,20 @@
+{
+	"testDesignProductivity": {
+		"LOW": 18.0,
+		"MEDIUM": 15.0,
+		"VERY_LOW": 21.0,
+		"HIGH": 12.0,
+		"VERY_HIGH": 9.0
+	},
+	"testExecutionProductivity": {
+		"LOW": 12.0,
+		"MEDIUM": 9.0,
+		"VERY_LOW": 15.0,
+		"HIGH": -6.0,
+		"VERY_HIGH": 3.0
+	},
+	"testConfigurationComplexityPercentage": 101.0,
+	"testDataComplexityPercentage": -20.0,
+	"testTransactionComplexityPercentage": 40.0,
+	"testValidationComplexityPercentage": 30.0
+}

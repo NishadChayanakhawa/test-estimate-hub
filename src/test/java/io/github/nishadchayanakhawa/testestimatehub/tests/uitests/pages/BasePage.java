@@ -125,6 +125,13 @@ public class BasePage extends ApplicationActions {
 		return new TestTypeConfigurationPage(this.driver);
 	}
 	
+	public GeneralConfigurationPage navigateToGeneralConfiguration() {
+		this.clickNavbarTogglerIfAvailable();
+		this.clickElement(configurationLink);
+		this.clickElement(this.generalConfigurationOption);
+		return new GeneralConfigurationPage(this.driver);
+	}
+	
 	public String getToastMessage() {
 		String toastMessage=this.getInnerText(visibleToastMessage);
 		this.clickElement(closeToastMessage);

@@ -44,4 +44,11 @@
 				name="io.github.nishadchayanakhawa.testestimatehub.tests.apitests.TestTypeConfigurationApiTests" />
 		</classes>
 	</test>
+	<test name="API Tests : General Configuration" parallel="methods"
+		thread-count="1">
+		<classes>
+			<class
+				name="io.github.nishadchayanakhawa.testestimatehub.tests.apitests.GeneralConfigurationApiTests" />
+		</classes>
+	</test>
 </suite>
