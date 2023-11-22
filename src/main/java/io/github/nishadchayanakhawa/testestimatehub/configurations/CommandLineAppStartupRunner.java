@@ -16,11 +16,17 @@ import io.github.nishadchayanakhawa.testestimatehub.model.dto.UserDTO;
 import io.github.nishadchayanakhawa.testestimatehub.model.dto.ApplicationConfigurationDTO;
 import io.github.nishadchayanakhawa.testestimatehub.model.dto.ChangeTypeDTO;
 import io.github.nishadchayanakhawa.testestimatehub.model.dto.TestTypeDTO;
+import io.github.nishadchayanakhawa.testestimatehub.model.dto.GeneralConfigurationDTO;
 import io.github.nishadchayanakhawa.testestimatehub.services.UserService;
 import io.github.nishadchayanakhawa.testestimatehub.services.ApplicationConfigurationService;
 import io.github.nishadchayanakhawa.testestimatehub.services.ChangeTypeService;
 import io.github.nishadchayanakhawa.testestimatehub.services.TestTypeService;
+import io.github.nishadchayanakhawa.testestimatehub.services.GeneralConfigurationService;
+import io.github.nishadchayanakhawa.testestimatehub.services.exceptions.EntityNotFoundException;
 import io.github.nishadchayanakhawa.testestimatehub.services.exceptions.TestEstimateHubExceptions;
+
+import com.fasterxml.jackson.core.exc.StreamReadException;
+import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
@@ -42,21 +48,29 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
 
 	@Value("${changeType.records}")
 	private Resource changeTypeRecords;
+	
+	@Value("${generalConfiguration.record}")
+	private Resource generalConfigurationRecord;
 
 	private UserService userService;
 	private ApplicationConfigurationService applicationConfigurationService;
 	private ChangeTypeService changeTypeService;
 	private TestTypeService testTypeService;
+	private GeneralConfigurationService generalConfigurationService;
+	
+	private static boolean areDefaultUsersLoaded=false;
 
 	@Autowired
 	public CommandLineAppStartupRunner(UserService userService,
 			ApplicationConfigurationService applicationConfigurationService,
 			ChangeTypeService changeTypeService,
-			TestTypeService testTypeService) {
+			TestTypeService testTypeService,
+			GeneralConfigurationService generalConfigurationService) {
 		this.userService = userService;
 		this.applicationConfigurationService = applicationConfigurationService;
 		this.changeTypeService=changeTypeService;
 		this.testTypeService=testTypeService;
+		this.generalConfigurationService=generalConfigurationService;
 	}
 
 	@Override
@@ -66,7 +80,11 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
 			loadDefaultApplicationConfiguration();
 			loadDefaultChangeTypes();
 			loadDefaultTestTypes();
+			loadDefaultGeneralConfiguration();
 			logger.info("Application started. Please navigate to http://localhost:8999/login");
+			if(CommandLineAppStartupRunner.areDefaultUsersLoaded) {
+				logger.info("Please login with username and password as 'admin'.");
+			}
 		} catch (Exception e) {
 			throw new TestEstimateHubExceptions(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR,
 					"Unhandled exception");
@@ -75,12 +93,13 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
 
 	private void loadDefaultUser() throws IOException {
 		if (userService.getAll().isEmpty()) {
-			logger.warn("No users were found. Default user will be created.");
+			logger.warn("No users were found. Default users will be created.");
 			UserDTO[] users = objectMapper.readValue(userRecords.getContentAsByteArray(), UserDTO[].class);
 			List.of(users).stream().forEach(user -> {
 				UserDTO savedUser = this.userService.save(user);
 				logger.info("User Saved: {}", savedUser);
 			});
+			CommandLineAppStartupRunner.areDefaultUsersLoaded=true;
 		}
 	}
 
@@ -120,6 +139,19 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
 						.save(testType);
 				logger.info("Test Type Saved: {}", savedTestType);
 			});
+		}
+	}
+	
+	private void loadDefaultGeneralConfiguration() throws IOException {
+		try {
+			this.generalConfigurationService.get();
+		} catch(EntityNotFoundException e) {
+			logger.warn("No general setting record found. Default record will be created.");
+			GeneralConfigurationDTO generalConfiguration=objectMapper
+					.readValue(generalConfigurationRecord.getContentAsByteArray(), GeneralConfigurationDTO.class);
+			GeneralConfigurationDTO savedGeneralConfiguration=
+					this.generalConfigurationService.save(generalConfiguration);
+			logger.info("General configuration Saved: {}", savedGeneralConfiguration);
 		}
 	}
 }

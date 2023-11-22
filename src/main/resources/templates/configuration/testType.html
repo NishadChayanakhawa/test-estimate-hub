@@ -28,7 +28,7 @@
 			</td>
 		</tr>
 	</script>
-	<script id="recordListTemplate" type="text/template" sec:authorize="hasRole('ROLE_TEST_MANAGER')">
+	<script id="recordListTemplate" type="text/template" sec:authorize="hasAnyRole('ROLE_TEST_MANAGER','ROLE_TEST_LEAD')">
 		<tr>
 			<td id="recordIdentifier_${id}_1">${name}</td>
 			<td>${relativeTestCaseCountPercentage}</td>
