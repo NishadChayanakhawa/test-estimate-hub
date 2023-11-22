@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:insert="~{BasePage :: headSection(title=~{::title/text()},script=~{::script},style=~{::style},link=~{::link})}"
+	th:remove="tag">
+	<title>Test Estimate Hub</title>
+	<script th:src="@{/application/js/configuration/applicationConfigurationProcessing.js}"></script>
+
+	<script>
+		$(document).ready(function () {
+			applicationConfigurationProcessing.init();
+		});
+	</script>
+	<script id="recordListTemplate" type="text/template" sec:authorize="hasRole('ROLE_ADMIN')">
+		<tr>
+			<td id="recordIdentifier_${id}_1">${application}</td>
+			<td id="recordIdentifier_${id}_2">${module}</td>
+			<td id="recordIdentifier_${id}_3">${subModule}</td>
+			<td>${baseTestScriptCount}</td>
+			<td>
+				<button class="border-0 bg-transparent" id="editRecordButton_${id}">
+					<i class="fa fa-edit"></i> Edit
+				</button>
+				<button class="border-0 bg-transparent text-danger" id="deleteRecordButton_${id}">
+					<i class="fa fa-trash"></i> Delete
+				</button>
+			</td>
+		</tr>
+	</script>
+	<script id="recordListTemplate" type="text/template" sec:authorize="hasAnyRole('ROLE_TEST_MANAGER','ROLE_AUTOMATION_MANAGER')">
+		<tr>
+			<td>${applicationName}</td>
+			<td>${moduleName}</td>
+			<td>${subModuleName}</td>
+			<td>${baseTestCaseCountFactor}</td>
+			<td>
+				<i class="fa-solid fa-ban"></i> N/A
+			</td>
+		</tr>
+	</script>
+</head>
+
+<body>
+	<input th:replace="~{BasePage :: csrfElement}" />
+
+	<nav th:replace="~{BasePage :: pageHeader(subTitle='Change Type Configuration')}"></nav>
+
+	<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel"
+		aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 class="modal-title fs-5" id="deleteConfirmationModalLabel">Delete Application Configuration Record</h1>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<form id="deleteRecordForm">
+						<input type="hidden" class="form-control" id="deleteRecordId" name="id" required />
+						Confirm delete operation for '<span class="fw-bold text-danger" id="deleteRecordIdentifierDisplay"></span>'
+						<hr>
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+						<button id="confirmDeleteOperation" type="submit" class="btn btn-danger">Confirm Delete</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade modal-lg" id="putRecordModal" tabindex="-1" aria-labelledby="putRecordModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 class="modal-title fs-5" id="putRecordModalLabel">Application Configuration Record</h1>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<form id="putRecordForm" autocomplete="off">
+						<input type="hidden" class="form-control" id="id" name="id" required />
+						<div class="form-floating mb-3">
+							<input type="text" class="form-control" id="application" name="application" required />
+							<label for="application">Application</label>
+						</div>
+						<div class="form-floating mb-3">
+							<input type="text" class="form-control" id="module" name="module" required />
+							<label for="module">Module</label>
+						</div>
+						<div class="form-floating mb-3">
+							<input type="text" class="form-control" id="subModule" name="subModule" required />
+							<label for="subModule">Sub-Module</label>
+						</div>
+						<div class="form-floating mb-3">
+							<input type="text" class="form-control constraint-numeric" id="baseTestScriptCount" name="baseTestScriptCount" required />
+							<label for="baseTestScriptCount">Base Test Case Count</label>
+						</div>
+						<hr>
+						<button id="dismissModal" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+						<button id="saveRecordButton" type="submit" class="btn btn-primary">Save changes</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="p-3" id="recordContent">
+		<button class="btn btn-sm btn-primary" id="addRecordButton" sec:authorize="hasRole('ROLE_ADMIN')" data-bs-toggle="modal" data-bs-target="#putRecordModal">
+			<i class="fa fa-plus"></i> Add Application Configuration Record
+		</button>
+		<br>
+		<br>
+		<table class="table table-striped" id="recordTable">
+			<caption>Application Configuration Records</caption>
+			<thead>
+				<tr id="recordTableHeader">
+					<th>Application</th>
+					<th>Module</th>
+					<th>Sub-Module</th>
+					<th>Base Test Script Count</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody id="recordTableBody">
+			</tbody>
+		</table>
+	</div>
+</body>
+
+</html>

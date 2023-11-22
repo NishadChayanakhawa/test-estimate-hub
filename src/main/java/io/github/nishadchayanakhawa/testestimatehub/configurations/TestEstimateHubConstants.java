@@ -21,6 +21,7 @@ public class TestEstimateHubConstants {
 	
 	public static final String NON_BLANK_MESSAGE="cannot be blank";
 	public static final String NON_EMPTY_MESSAGE="should have at least one value";
+	public static final String MINIMUM_VALUE_MESSAGE="cannot be lower than";
 	
 	public static String getDuplicateEntityExceptionErrorMessage(String entity, String field, String value) {
 		return String.format("%s '%s' already exists for another %s", field, value, entity);

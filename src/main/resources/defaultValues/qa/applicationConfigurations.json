@@ -1,32 +1,56 @@
 [
 	{
-		"application": "TEH",
+		"application": "Test Estimate Hub",
 		"module": "Configuration",
-		"subModule": "General Configuration",
-		"baseTestScriptCount": 3
+		"subModule": "User Management",
+		"baseTestScriptCount": 10
 	},
 	{
-		"application": "TEH",
-		"module": "Record Management",
-		"subModule": "Release Record Management",
-		"baseTestScriptCount": 6
-	},
-	{
-		"application": "TEH",
-		"module": "Record Management",
-		"subModule": "Change Record Management",
-		"baseTestScriptCount": 6
-	},
-	{
-		"application": "TEH",
-		"module": "Record Management",
-		"subModule": "Use Case Record Management",
+		"application": "Test Estimate Hub",
+		"module": "Configuration",
+		"subModule": "Application Configuration",
 		"baseTestScriptCount": 8
 	},
 	{
-		"application": "TEH",
+		"application": "Test Estimate Hub",
+		"module": "Configuration",
+		"subModule": "Change Type Configuration",
+		"baseTestScriptCount": 99
+	},
+	{
+		"application": "Test Estimate Hub",
+		"module": "Configuration",
+		"subModule": "Test Type Configuration",
+		"baseTestScriptCount": 99
+	},
+	{
+		"application": "Test Estimate Hub",
+		"module": "Configuration",
+		"subModule": "General Configuration",
+		"baseTestScriptCount": 99
+	},
+	{
+		"application": "Test Estimate Hub",
 		"module": "Record Management",
-		"subModule": "Estimation Record Management",
-		"baseTestScriptCount": 12
+		"subModule": "Release Record Management",
+		"baseTestScriptCount": 99
+	},
+	{
+		"application": "Test Estimate Hub",
+		"module": "Record Management",
+		"subModule": "Change Record Management",
+		"baseTestScriptCount": 99
+	},
+	{
+		"application": "Test Estimate Hub",
+		"module": "Estimation",
+		"subModule": "Use Case Management",
+		"baseTestScriptCount": 99
+	},
+	{
+		"application": "Test Estimate Hub",
+		"module": "Estimation",
+		"subModule": "Calculate Estimates",
+		"baseTestScriptCount": 99
 	}
 ]

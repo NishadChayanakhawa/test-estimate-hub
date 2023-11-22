@@ -11,6 +11,12 @@
 				name="io.github.nishadchayanakhawa.testestimatehub.tests.apitests.UserManagementApiTests" />
 		</classes>
 	</test>
+	<test name="API Tests : Application Configuration" parallel="methods" thread-count="1">
+		<classes>
+			<class
+				name="io.github.nishadchayanakhawa.testestimatehub.tests.apitests.ApplicationConfigurationApiTests" />
+		</classes>
+	</test>
 	<test name="Coverage Tests" parallel="methods" thread-count="1">
 		<classes>
 			<class
