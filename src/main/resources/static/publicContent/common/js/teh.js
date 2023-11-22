@@ -69,6 +69,7 @@ var teh = (function() {
 		logging.log("Dismissed modal");
 		$(".is-invalid").removeClass("is-invalid");
 		$(formXPath)[0].reset();
+		$("input[name='id']").val("");
 	};
 
 	var getToastrOptions = function() {

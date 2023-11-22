@@ -1,148 +1,229 @@
 var changeTypeConfigurationProcessing = (function() {
+	//csrf token
 	var csrfToken;
+	//api path
+	const API_PATH = "/api/configuration/changeType";
+	//record name
+	const RECORD_NAME = "Change type";
+
+	//common xpaths
 	var xpaths = {
-		"changeTypeConfigurationContent": "div#changeTypeConfigurationContent",
-		"addOrEditChangeTypeConfigurationRecordModal": "#addOrEditChangeTypeConfigurationRecordModal",
-		"changeTypeConfigurationRecordListPlaceholder": "#changeTypeConfigurationRecordListPlaceholder",
-		"saveChangeTypeConfigurationButton": "button#saveChangeTypeConfiguration",
-		"saveChangeTypeConfigurationForm": "form#saveChangeTypeConfigurationForm",
-		"changeTypeConfigurationRecordTable": "table#changeTypeConfigurationRecordTable",
-		"changeTypeConfigurationRecordTableBody": "tbody#changeTypeConfigurationRecordTableBody",
-		"changeTypeConfigurationRecordListTemplate": "#changeTypeConfigurationRecordListTemplate",
-		"editChangeTypeConfigurationButtons": "button[id^='editChangeTypeConfiguration_']",
-		"deleteChangeTypeConfigurationButtons": "button[id^='deleteChangeTypeConfiguration_']",
-		"deleteUserConfirmationModal": "div#deleteUserConfirmationModal",
-		"confirmDeleteChangeTypeConfigurationRecordButton": "button#confirmDeleteChangeTypeConfigurationRecord",
-		"deleteChangeTypeConfigurationDeleteForm": "form#deleteChangeTypeConfigurationDeleteForm"
+		"record": {
+			"template": "#recordListTemplate",
+			"table": {
+				"table": "table#recordTable",
+				"body": "tbody#recordTableBody",
+				"header": "tr#recordTableHeader"
+			}
+		},
+		"modals": {
+			"delete": "div#deleteConfirmationModal",
+			"put": "div#putRecordModal"
+		},
+		"buttons": {
+			"confirmDelete": "button#confirmDeleteOperation",
+			"save": "button#saveRecord",
+			"edit": "button[id^='editRecordButton_']",
+			"delete": "button[id^='deleteRecordButton_']"
+		},
+		"forms": {
+			"put": "form#putRecordForm",
+			"delete" : "form#deleteRecordForm"
+		},
+		"elements" : {
+			"deleteRecordId" : "input#deleteRecordId",
+			"deleteRecordIdentifierDisplay": "span#deleteRecordIdentifierDisplay"
+		}
 	};
 	
-	var onModalDismiss=function() {
-		logging.log("Dismissed modal");
-		$(".is-invalid").removeClass("is-invalid");
-		$("form#saveChangeTypeConfigurationForm")[0].reset();
-	};
-
-	//DELETE Process
-
-	var showDeleteModal = function(event) {
+	/**
+	 *******************Delete Record************************* 
+	 */
+	var showDeleteConfimationModal=function(event) {
 		event.preventDefault();
-		var deleteButtonId = $(this).attr("id");
-		var changeTypeConfigurationId = deleteButtonId.split("_")[1];
-		var changeTypeDisplayName_=$("td#changeTypeDisplayName_" + changeTypeConfigurationId).html();
-		$("span#changeTypeNameDisplay").html(changeTypeDisplayName_);
-		$("input#deleteAction_id").val(changeTypeConfigurationId);
-		$(xpaths["deleteUserConfirmationModal"]).modal("show");
+		logging.log("Showing delete modal");
+		var recordId=$(this).attr('id').split("_")[1];
+		logging.log("Record id: " + recordId);
+		$(xpaths.elements.deleteRecordId).val(recordId);
+		var recordIdentifier="";
+		$("td[id^='recordIdentifier_" + recordId + "_']").each(function() {
+			logging.log($(this).html());
+			if(recordIdentifier!="") {
+				recordIdentifier=recordIdentifier + " - ";				
+			}
+			recordIdentifier=recordIdentifier + $(this).html();
+		});
+		$(xpaths.elements.deleteRecordIdentifierDisplay).html(recordIdentifier);
+		$(xpaths.modals.delete).modal('show');
 	};
-
-	var deleteChangeTypeConfigurationRecord = function(event) {
+	
+	var deleteRecord=function(event) {
 		event.preventDefault();
-		$(this).indicateButtonProcessing();
-		var changeTypeConfigurationId = $(xpaths["deleteChangeTypeConfigurationDeleteForm"]).serializeObject();
-		apiHandling.processRequest("delete", "/api/configuration/changeType", csrfToken, changeTypeConfigurationId)
-			.done(data => deleteChangeTypeConfigurationRecord_success(data,$("span#changeTypeNameDisplay").html()))
-			.catch(error => console.debug(error));
-	}
-
-	var deleteChangeTypeConfigurationRecord_success = function(data,changeTypeName) {
+		logging.log("Deleting record");
+		$(xpaths.buttons.confirmDelete).indicateButtonProcessing();
+		var deleteRequestBody=$(xpaths.forms.delete).serializeObject();
+		logging.log("Delete request: ")
+		logging.log(deleteRequestBody)
+		apiHandling.processRequest("delete", API_PATH, csrfToken,deleteRequestBody)
+			.done(data => deleteRecord_success(data))
+			.catch(error => deleteRecord_failure(error));
+	};
+	
+	var deleteRecord_success=function(data) {
 		logging.log(data);
-		$(this).indicateButtonProcessingCompleted();
-		toastr.success("Change type '" + changeTypeName + "' deleted successfully");
-		$(xpaths["deleteUserConfirmationModal"]).modal("hide");
-		getChangeTypeConfigurationList();
+		var deletedRecordIdentifier=$(xpaths.elements.deleteRecordIdentifierDisplay).html();
+		$(xpaths.modals.delete).modal('hide');
+		toastr.success(RECORD_NAME + " '" + deletedRecordIdentifier + "' deleted successfully");
+		$(xpaths.buttons.confirmDelete).indicateButtonProcessingCompleted();
+		loadRecords();
+	};
+	
+	var deleteRecord_failure=function(data) {
+		logging.log(data);
+		$(xpaths.buttons.confirmDelete).indicateButtonProcessingCompleted();
+		processUnexpectedError(error);
 	};
 
-	//Load List
-
-	var getChangeTypeConfigurationList = function() {
-		//event.preventDefault();
-		$(xpaths["changeTypeConfigurationRecordTableBody"]).html($(xpaths["ChangeTypeConfigurationRecordListPlaceholder"]).html());
-		$(xpaths["changeTypeConfigurationRecordTableBody"]).indicateTableLoading(6);
-		apiHandling.processRequest("get", "/api/configuration/changeType", csrfToken, null)
-			.done(data => getChangeTypeConfigurationList_success(data))
-			.catch(error => console.debug(error));
-	};
-
-	var getChangeTypeConfigurationList_success = function(changeTypeConfigurationRecords) {
-		console.debug(changeTypeConfigurationRecords);
-		populateDataTable(changeTypeConfigurationRecords,
-			xpaths["changeTypeConfigurationRecordTable"],
-			xpaths["changeTypeConfigurationRecordTableBody"],
-			xpaths["changeTypeConfigurationRecordListTemplate"]);
-		$(xpaths["changeTypeConfigurationRecordTableBody"]).indicateTableLoadingCompleted();
-	};
-
-	var populateDataTable = function(data, tableXPath, tableBodyXPath, templateXPath) {
-		if ($.fn.DataTable.isDataTable(tableXPath)) {
-			$(tableXPath).DataTable().destroy();
-		}
-		$(tableBodyXPath).html("");
-		$(templateXPath).tmpl(data).appendTo(tableBodyXPath);
-		$(tableXPath).DataTable();
-		$(xpaths["ChangeTypeConfigurationContent"]).unblock();
-	};
-
-	//Add/Edit
-
-	var saveChangeTypeConfiguration = function(event) {
-		event.preventDefault();
-		$(this).indicateButtonProcessing();
-		var saveChangeTypeConfigurationData = $(xpaths["saveChangeTypeConfigurationForm"]).serializeObject();
-		logging.log(saveChangeTypeConfigurationData);
-		apiHandling.processRequest("put", "/api/configuration/changeType", csrfToken, saveChangeTypeConfigurationData)
-			.done(data => saveChangeTypeConfiguration_success(data))
-			.catch(error => saveChangeTypeConfiguration_failure(error));
-
-	};
-
-	var saveChangeTypeConfiguration_success = function(changeTypeConfiguration) {
-		console.debug(changeTypeConfiguration);
-		$("form#saveChangeTypeConfigurationForm").indicateButtonProcessingCompleted();
-		toastr.success("Change Type Configuration '" + changeTypeConfiguration.name + "' saved");
-		$(xpaths["addOrEditChangeTypeConfigurationRecordModal"]).modal('hide');
-		getChangeTypeConfigurationList();
-	};
-
-	var saveChangeTypeConfiguration_failure = function(error) {
-		console.debug(error);
-		$("form#saveChangeTypeConfigurationForm").indicateButtonProcessingCompleted();
-		processApiErrors(error.responseJSON.details);
-	};
+	/**
+	 *******************Edit Record***************************
+	 */
 
 	var showEditModal = function(event) {
 		event.preventDefault();
+		logging.log("Showing edit modal");
+		//indicate that request in progress
 		$(this).indicateButtonProcessing();
-		var editButtonId = $(this).attr("id");
-		var changeTypeConfigurationId = editButtonId.split("_")[1];
-		apiHandling.processRequest("get", "/api/configuration/changeType/" + changeTypeConfigurationId, csrfToken, null)
+		var recordId=$(this).attr('id').split("_")[1];
+		logging.log("Record id: " + recordId);
+		apiHandling.processRequest("get", API_PATH + "/" + recordId, csrfToken)
 			.done(data => showEditModal_success(data,$(this)))
-			.catch(error => console.debug(error));
+			.catch(error => showEditModal_failure(error,$(this)));
 	};
-
-	var showEditModal_success = function(changeTypeConfigurationRecord,editButton) {
-		updateEditForm($(xpaths["addOrEditChangeTypeConfigurationRecordModal"]),changeTypeConfigurationRecord,true);
+	
+	var showEditModal_success=function(record,editButton) {
+		logging.log(record);
 		editButton.indicateButtonProcessingCompleted();
+		teh.updateEditForm(xpaths.forms.put,record);
+		$(xpaths.modals.put).modal('show');
+	};
+	
+	var showEditModal_failure=function(error,editButton) {
+		logging.log(error);
+		editButton.indicateButtonProcessingCompleted();
+		processUnexpectedError(error);
 	};
 
-	var resetAddRecordForm = function(event) {
+	/**
+	 *******************Save Record****************************
+	 */
+	var saveRecord = function(event) {
 		event.preventDefault();
-		$("input#id").val(null);
-		$(xpaths["saveChangeTypeConfigurationForm"])[0].reset();
-		$(xpaths["addOrEditChangeTypeConfigurationRecordModal"]).modal("show");
+		//indicate that saving is in progress
+		$(xpaths.forms.put).indicateButtonProcessing();
+		logging.log("Saving " + RECORD_NAME);
+		logging.log("Record to save is:");
+		//get save request body
+		var saveRequestBody = $(xpaths.forms.put).serializeObject();
+		logging.log(saveRequestBody);
+		apiHandling.processRequest("put", API_PATH, csrfToken, saveRequestBody)
+			.done(data => saveRecord_success(data))
+			.catch(error => saveRecord_failure(error));
 	};
 
+	var saveRecord_success = function(savedRecord) {
+		logging.log("Saved Record: ");
+		logging.log(savedRecord);
+		//indicate that saving is completed
+		$(xpaths.forms.put).indicateButtonProcessingCompleted();
+		//hide modal for put record
+		$(xpaths.modals.put).modal('hide');
+		//show success message
+		teh.showSaveSuccessMessage(RECORD_NAME, savedRecord.name);
+		loadRecords();
+	};
+
+	var saveRecord_failure = function(error) {
+		logging.log("Error: ");
+		logging.log(error);
+		//process errors to mark invalid fields
+		teh.processSaveApiErrors(error.responseJSON.details);
+		//indicate processing is completed
+		$(xpaths.forms.put).indicateButtonProcessingCompleted();
+	};
+
+	/**
+	 *******************Load Records*************************** 
+	 */
+
+	/**
+	 * loadRecords
+	 * Loads existing records
+	 */
+	var loadRecords = function() {
+		logging.log("Loading existing " + RECORD_NAME + " records!!!");
+		//indicate that loading process has started
+		$(xpaths.record.table.body).indicateTableLoading($(xpaths.record.table.header).children().length);
+		//call 'GET' method for record api
+		apiHandling.processRequest("get", API_PATH, csrfToken)
+			.done(data => loadRecords_success(data))
+			.catch(error => loadRecords_failure(error));
+	};
+
+	/**
+	 * loadRecords_success
+	 * execute when records are loaded through api call
+	 */
+	var loadRecords_success = function(records) {
+		logging.log(records);
+		//indicate that loading process is completed
+		$(xpaths.record.table.body).indicateTableLoadingCompleted();
+		//populate records in table and format the same as datatable
+		populateDataTable(records, xpaths.record.table.table, xpaths.record.table.body, xpaths.record.template);
+	};
+
+	/**
+	 * loadRecords_failure
+	 * executed when record loading has failed
+	 */
+	var loadRecords_failure = function(error) {
+		logging.log(error);
+		//indicate that loading process is completed
+		$(xpaths.record.table.body).indicateTableLoadingCompleted();
+		//show appropriate toast message
+		processUnexpectedError(error);
+	};
+
+	/**
+	 * Initialize module
+	 */
 	var init = function() {
-		logging.enable();
-		$("form#saveChangeTypeConfigurationForm").submit(saveChangeTypeConfiguration);
-		$(xpaths["changeTypeConfigurationContent"]).on("click", xpaths["editChangeTypeConfigurationButtons"], showEditModal);
-		$(xpaths["changeTypeConfigurationContent"]).on("click", xpaths["deleteChangeTypeConfigurationButtons"], showDeleteModal);
-		$(xpaths["confirmDeleteChangeTypeConfigurationRecordButton"]).click(deleteChangeTypeConfigurationRecord);
-
-		$("button#addChangeTypeConfigurationRecordButton").on("click", resetAddRecordForm);
-		$("#addOrEditChangeTypeConfigurationRecordModal").on("hidden.bs.modal",onModalDismiss);
-
+		//enable or disable logging
+		logging.setLoggingSwitch(teh.shouldEnableLogging());
+		//get csrf token
 		csrfToken = $("input#csrf").val();
-		getChangeTypeConfigurationList();
-		toastr.options = getToastrOptions();
+		//set toastr options
+		toastr.options = teh.getToastrOptions();
+
+		//bind save function to put record submission event
+		$(xpaths.forms.put).submit(saveRecord);
+		//bind to modal dismiss event
+		$(xpaths.modals.put).on("hidden.bs.modal", function() {
+			teh.onModalDismiss(xpaths.forms.put);
+		});
+		//bind edit action
+		$(xpaths.record.table.body).on("click", xpaths.buttons.edit, showEditModal);
+		
+		//bind delete action
+		$(xpaths.record.table.body).on("click", xpaths.buttons.delete, showDeleteConfimationModal);
+		
+		//bind confirm delete action
+		$(xpaths.buttons.confirmDelete).click(deleteRecord);
+		
+		showDeleteConfimationModal
+		logging.log(RECORD_NAME + " module initialized!!!");
+
+		//load records
+		loadRecords();
 	};
 
 	return {
