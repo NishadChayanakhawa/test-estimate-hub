@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:insert="~{BasePage :: headSection(title=~{::title/text()},script=~{::script},style=~{::style},link=~{::link})}"
+	th:remove="tag">
+	<title>Test Estimate Hub</title>
+
+	<script th:src="@{/application/js/record/releaseProcessing.js}"></script>
+
+	<script>
+		$(document).ready(function () {
+			releaseProcessing.init();
+		});
+	</script>
+	<script id="recordListTemplate" type="text/template" sec:authorize="hasRole('ROLE_ADMIN')">
+		<tr>
+			<td id="recordIdentifier_${id}_1">${identifier}</td>
+			<td>${name}</td>
+			<td>${startDate}</td>
+			<td>${endDate}</td>
+			<td>
+				<button class="border-0 bg-transparent" id="editRecordButton_${id}">
+					<i class="fa fa-edit"></i> Edit
+				</button>
+				<button class="border-0 bg-transparent text-danger" id="deleteRecordButton_${id}">
+					<i class="fa fa-trash"></i> Delete
+				</button>
+			</td>
+		</tr>
+	</script>
+	<script id="recordListTemplate" type="text/template" sec:authorize="hasAnyRole('ROLE_TEST_MANAGER','ROLE_TEST_LEAD')">
+		<tr>
+			<td id="recordIdentifier_${id}_1">${identifier}</td>
+			<td>${name}</td>
+			<td>${startDate}</td>
+			<td>${endDate}</td>
+		</tr>
+	</script>
+</head>
+
+<body>
+	<input th:replace="~{BasePage :: csrfElement}" />
+
+	<nav th:replace="~{BasePage :: pageHeader(subTitle='Release Record Management')}"></nav>
+
+	<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel"
+		aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 class="modal-title fs-5" id="deleteConfirmationModalLabel">Delete User
+						Record</h1>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<form id="deleteRecordForm">
+						<input type="hidden" class="form-control" id="deleteRecordId" name="id" required />
+						Confirm delete operation for '<span class="fw-bold text-danger"
+							id="deleteRecordIdentifierDisplay"></span>'
+						<hr>
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+						<button id="confirmDeleteOperation" type="submit" class="btn btn-danger">Confirm Delete</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade modal-lg" id="putRecordModal" tabindex="-1" aria-labelledby="putRecordModalLabel"
+		aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 class="modal-title fs-5" id="putRecordModalLabel">Change Type Record</h1>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<form id="putRecordForm" autocomplete="off">
+						<input type="hidden" class="form-control" id="id" name="id" required />
+						<div class="form-floating mb-3">
+							<input type="text" class="form-control" id="identifier" name="identifier" required />
+							<label for="name">Release ID</label>
+						</div>
+						<div class="form-floating mb-3">
+							<input type="text" class="form-control" id="name" name="name" required />
+							<label for="name">Release Name</label>
+						</div>
+						<div class="form-floating mb-3 col-3">
+							<input id="startDate" name="startDate" class="form-control" type="date" required />
+							<label for="startDate">Start Date</label>
+						</div>
+						<div class="form-floating mb-3 col-3">
+							<input id="endDate" name="endDate" class="form-control" type="date" required />
+							<label for="endDate">End Date</label>
+						</div>
+						<hr>
+						<button id="dismissModal" type="button" class="btn btn-secondary"
+							data-bs-dismiss="modal">Close</button>
+						<button id="saveRecordButton" type="submit" class="btn btn-primary">Save changes</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="p-3" id="recordContent">
+		<button class="btn btn-sm btn-primary" id="addRecordButton" sec:authorize="hasRole('ROLE_ADMIN')"
+			data-bs-toggle="modal" data-bs-target="#putRecordModal">
+			<i class="fa fa-plus"></i> Add Change Type Record
+		</button>
+		<br>
+		<br>
+		<table class="table table-striped" id="recordTable">
+			<caption>User Records</caption>
+			<thead>
+				<tr id="recordTableHeader">
+					<th>Identifier</th>
+					<th>Name</th>
+					<th>Start date</th>
+					<th>End date</th>
+					<th sec:authorize="hasRole('ROLE_ADMIN')">Actions</th>
+				</tr>
+			</thead>
+			<tbody id="recordTableBody">
+			</tbody>
+		</table>
+	</div>
+</body>
+
+</html>
