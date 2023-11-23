@@ -1,143 +1,229 @@
 var releaseProcessing = (function() {
+	//csrf token
 	var csrfToken;
-	const API_PATH="/api/release";
+	//api path
+	const API_PATH = "/api/release";
+	//record name
+	const RECORD_NAME = "Release";
+
+	//common xpaths
 	var xpaths = {
-		"releaseContent" : "div#releaseContent",
-		"addOrEditReleaseRecordModal" : "#addOrEditReleaseRecordModal",
-		"releaseRecordListPlaceholder" : "#releaseRecordListPlaceholder",
-		"saveReleaseButton" : "button#saveRelease",
-		"saveReleaseForm" : "form#saveReleaseForm",
-		"releaseRecordTable" : "table#releaseRecordTable",
-		"releaseRecordTableBody" : "tbody#releaseRecordTableBody",
-		"releaseRecordListTemplate" : "#releaseRecordListTemplate",
-		"editReleaseButtons" : "button[id^='editRelease_']",
-		"deleteReleaseButtons" : "button[id^='deleteRelease_']",
-		"deleteUserConfirmationModal" : "div#deleteUserConfirmationModal",
-		"confirmDeleteReleaseRecordButton" : "button#confirmDeleteReleaseRecord",
-		"deleteReleaseDeleteForm" : "form#deleteReleaseDeleteForm"
+		"record": {
+			"template": "#recordListTemplate",
+			"table": {
+				"table": "table#recordTable",
+				"body": "tbody#recordTableBody",
+				"header": "tr#recordTableHeader"
+			}
+		},
+		"modals": {
+			"delete": "div#deleteConfirmationModal",
+			"put": "div#putRecordModal"
+		},
+		"buttons": {
+			"confirmDelete": "button#confirmDeleteOperation",
+			"save": "button#saveRecord",
+			"edit": "button[id^='editRecordButton_']",
+			"delete": "button[id^='deleteRecordButton_']"
+		},
+		"forms": {
+			"put": "form#putRecordForm",
+			"delete" : "form#deleteRecordForm"
+		},
+		"elements" : {
+			"deleteRecordId" : "input#deleteRecordId",
+			"deleteRecordIdentifierDisplay": "span#deleteRecordIdentifierDisplay"
+		}
 	};
 	
-	var deleteRelease=function(event) {
+	/**
+	 *******************Delete Record************************* 
+	 */
+	var showDeleteConfimationModal=function(event) {
 		event.preventDefault();
-		logging.log("Deleting release");
-		$(xpaths["confirmDeleteReleaseRecordButton"]).indicateButtonProcessing();
-		var deleteRequest=$(xpaths["deleteReleaseDeleteForm"]).serializeObject();
-		logging.log(deleteRequest);
-		apiHandling.processRequest("delete", API_PATH, csrfToken,deleteRequest)
-			.done(data => deleteRelease_success(data))
-			.catch(error => deleteRelease_failure(error));
+		logging.log("Showing delete modal");
+		var recordId=$(this).attr('id').split("_")[1];
+		logging.log("Record id: " + recordId);
+		$(xpaths.elements.deleteRecordId).val(recordId);
+		var recordIdentifier="";
+		$("td[id^='recordIdentifier_" + recordId + "_']").each(function() {
+			logging.log($(this).html());
+			if(recordIdentifier!="") {
+				recordIdentifier=recordIdentifier + " - ";				
+			}
+			recordIdentifier=recordIdentifier + $(this).html();
+		});
+		$(xpaths.elements.deleteRecordIdentifierDisplay).html(recordIdentifier);
+		$(xpaths.modals.delete).modal('show');
 	};
 	
-	var deleteRelease_success=function(data) {
+	var deleteRecord=function(event) {
+		event.preventDefault();
+		logging.log("Deleting record");
+		$(xpaths.buttons.confirmDelete).indicateButtonProcessing();
+		var deleteRequestBody=$(xpaths.forms.delete).serializeObject();
+		logging.log("Delete request: ")
+		logging.log(deleteRequestBody)
+		apiHandling.processRequest("delete", API_PATH, csrfToken,deleteRequestBody)
+			.done(data => deleteRecord_success(data))
+			.catch(error => deleteRecord_failure(error));
+	};
+	
+	var deleteRecord_success=function(data) {
 		logging.log(data);
-		$(xpaths["confirmDeleteReleaseRecordButton"]).indicateButtonProcessingCompleted();
-		toastr.success("Release '" + $("span#releaseIdentifierDisplay").html() + "' deleted successfully");
-		$(xpaths["deleteUserConfirmationModal"]).modal('hide');
-		loadReleaseRecords();
-	}
-	
-	var deleteRelease_failure=function(error) {
-		logging.log(error);
-		$(xpaths["confirmDeleteReleaseRecordButton"]).indicateButtonProcessingCompleted();
-		toastr.error(error.responseJSON.path + ' ' + error.responseJSON.error);
-	}
-	
-	var showDeleteModal=function(event) {
-		event.preventDefault();
-		logging.log("Showing delete modal!!!");
-		var deleteButtonId = $(this).attr("id");
-		var releaseId = deleteButtonId.split("_")[1];
-		logging.log("Showing delete modal for release id: " + releaseId);
-		$("span#releaseIdentifierDisplay").html($("td#releaseIdentifier_" + releaseId).html());
-		$("input#deleteAction_id").val(releaseId);
-		$(xpaths["deleteUserConfirmationModal"]).modal('show');
+		var deletedRecordIdentifier=$(xpaths.elements.deleteRecordIdentifierDisplay).html();
+		$(xpaths.modals.delete).modal('hide');
+		toastr.success(RECORD_NAME + " '" + deletedRecordIdentifier + "' deleted successfully");
+		$(xpaths.buttons.confirmDelete).indicateButtonProcessingCompleted();
+		loadRecords();
 	};
 	
-	var showEditModal=function(event) {
+	var deleteRecord_failure=function(data) {
+		logging.log(data);
+		$(xpaths.buttons.confirmDelete).indicateButtonProcessingCompleted();
+		processUnexpectedError(error);
+	};
+
+	/**
+	 *******************Edit Record***************************
+	 */
+
+	var showEditModal = function(event) {
 		event.preventDefault();
-		logging.log("Showing edit modal!!!");
+		logging.log("Showing edit modal");
+		//indicate that request in progress
 		$(this).indicateButtonProcessing();
-		var editButtonId = $(this).attr("id");
-		var releaseId = editButtonId.split("_")[1];
-		apiHandling.processRequest("get", API_PATH + "/" + releaseId, csrfToken)
+		var recordId=$(this).attr('id').split("_")[1];
+		logging.log("Record id: " + recordId);
+		apiHandling.processRequest("get", API_PATH + "/" + recordId, csrfToken)
 			.done(data => showEditModal_success(data,$(this)))
 			.catch(error => showEditModal_failure(error,$(this)));
 	};
 	
-	var showEditModal_success=function(release,editButton) {
-		logging.log(release);
+	var showEditModal_success=function(record,editButton) {
+		logging.log(record);
 		editButton.indicateButtonProcessingCompleted();
-		updateEditForm($(xpaths["addOrEditReleaseRecordModal"]),release,true);
+		teh.updateEditForm(xpaths.forms.put,record);
+		$(xpaths.modals.put).modal('show');
 	};
 	
 	var showEditModal_failure=function(error,editButton) {
 		logging.log(error);
 		editButton.indicateButtonProcessingCompleted();
-	};
-	
-	var saveRelease=function(event) {
-		event.preventDefault();
-		logging.log("Saving release!!!");
-		$(this).indicateButtonProcessing();
-		$("input.is-invalid").removeClass('is-invalid');
-		var saveReleaseRequest=$(xpaths["saveReleaseForm"]).serializeObject();
-		logging.log(saveReleaseRequest);
-		apiHandling.processRequest("put",API_PATH,csrfToken,saveReleaseRequest)
-			.done(data => saveRelease_success(data))
-			.catch(error => saveRelease_failure(error));
-	};
-	
-	var saveRelease_success=function(release) {
-		logging.log(release);
-		$(xpaths["saveReleaseButton"]).indicateButtonProcessingCompleted();
-		toastr.success("Release '" + release.identifier + "' saved");
-		$("#addOrEditReleaseRecordModal").modal('hide');
-		loadReleaseRecords();
-	};
-	
-	var saveRelease_failure=function(error) {
-		logging.log(error);
-		$(xpaths["saveReleaseButton"]).indicateButtonProcessingCompleted();
-		processApiErrors(error.responseJSON.details);
-	};
-	
-	var loadReleaseRecords=function() {
-		logging.log("loading release records!!!");
-		$(xpaths["releaseRecordTableBody"]).indicateTableLoading(5);
-		apiHandling.processRequest("get",API_PATH,csrfToken)
-			.done(data => loadReleaseRecords_success(data))
-			.catch(error => loadReleaseRecords_failure(error));
-	};
-	
-	var loadReleaseRecords_success=function(releaseRecords) {
-		logging.log(releaseRecords);
-		$(xpaths["releaseRecordTableBody"]).indicateTableLoadingCompleted();
-		populateDataTable(releaseRecords,xpaths["releaseRecordTable"],xpaths["releaseRecordTableBody"],xpaths["releaseRecordListTemplate"]);
-	};
-	
-	var loadReleaseRecords_failure=function(error) {
-		logging.log(error);
-		$(xpaths["releaseRecordTableBody"]).indicateTableLoadingCompleted();
-		toastr.error(error.responseJSON.path + ' ' + error.responseJSON.error);
-	};
-	
-	var onModalDismiss=function() {
-		logging.log("Dismissed modal");
-		$(".is-invalid").removeClass("is-invalid");
-		$(xpaths["saveReleaseForm"])[0].reset();
+		processUnexpectedError(error);
 	};
 
-	var init=function() {
-		csrfToken=$("input#csrf").val();
-		toastr.options = getToastrOptions();
-		logging.enable();
-		$(xpaths["saveReleaseForm"]).submit(saveRelease);
-		$("#addOrEditReleaseRecordModal").on("hidden.bs.modal",onModalDismiss);
-		$(xpaths["releaseRecordTableBody"]).on("click",xpaths["editReleaseButtons"],showEditModal);
-		$(xpaths["releaseRecordTableBody"]).on("click",xpaths["deleteReleaseButtons"],showDeleteModal);
-		$(xpaths["deleteReleaseDeleteForm"]).submit(deleteRelease);
-		loadReleaseRecords();
-		logging.log("Release Management initialized!!!");
+	/**
+	 *******************Save Record****************************
+	 */
+	var saveRecord = function(event) {
+		event.preventDefault();
+		//indicate that saving is in progress
+		$(xpaths.forms.put).indicateButtonProcessing();
+		logging.log("Saving " + RECORD_NAME);
+		logging.log("Record to save is:");
+		//get save request body
+		var saveRequestBody = $(xpaths.forms.put).serializeObject();
+		logging.log(saveRequestBody);
+		apiHandling.processRequest("put", API_PATH, csrfToken, saveRequestBody)
+			.done(data => saveRecord_success(data))
+			.catch(error => saveRecord_failure(error));
+	};
+
+	var saveRecord_success = function(savedRecord) {
+		logging.log("Saved Record: ");
+		logging.log(savedRecord);
+		//indicate that saving is completed
+		$(xpaths.forms.put).indicateButtonProcessingCompleted();
+		//hide modal for put record
+		$(xpaths.modals.put).modal('hide');
+		//show success message
+		teh.showSaveSuccessMessage(RECORD_NAME, savedRecord.name);
+		loadRecords();
+	};
+
+	var saveRecord_failure = function(error) {
+		logging.log("Error: ");
+		logging.log(error);
+		//process errors to mark invalid fields
+		teh.processSaveApiErrors(error.responseJSON.details);
+		//indicate processing is completed
+		$(xpaths.forms.put).indicateButtonProcessingCompleted();
+	};
+
+	/**
+	 *******************Load Records*************************** 
+	 */
+
+	/**
+	 * loadRecords
+	 * Loads existing records
+	 */
+	var loadRecords = function() {
+		logging.log("Loading existing " + RECORD_NAME + " records!!!");
+		//indicate that loading process has started
+		$(xpaths.record.table.body).indicateTableLoading($(xpaths.record.table.header).children().length);
+		//call 'GET' method for record api
+		apiHandling.processRequest("get", API_PATH, csrfToken)
+			.done(data => loadRecords_success(data))
+			.catch(error => loadRecords_failure(error));
+	};
+
+	/**
+	 * loadRecords_success
+	 * execute when records are loaded through api call
+	 */
+	var loadRecords_success = function(records) {
+		logging.log(records);
+		//indicate that loading process is completed
+		$(xpaths.record.table.body).indicateTableLoadingCompleted();
+		//populate records in table and format the same as datatable
+		populateDataTable(records, xpaths.record.table.table, xpaths.record.table.body, xpaths.record.template);
+	};
+
+	/**
+	 * loadRecords_failure
+	 * executed when record loading has failed
+	 */
+	var loadRecords_failure = function(error) {
+		logging.log(error);
+		//indicate that loading process is completed
+		$(xpaths.record.table.body).indicateTableLoadingCompleted();
+		//show appropriate toast message
+		processUnexpectedError(error);
+	};
+
+	/**
+	 * Initialize module
+	 */
+	var init = function() {
+		//enable or disable logging
+		logging.setLoggingSwitch(teh.shouldEnableLogging());
+		//get csrf token
+		csrfToken = $("input#csrf").val();
+		//set toastr options
+		toastr.options = teh.getToastrOptions();
+
+		//bind save function to put record submission event
+		$(xpaths.forms.put).submit(saveRecord);
+		//bind to modal dismiss event
+		$(xpaths.modals.put).on("hidden.bs.modal", function() {
+			teh.onModalDismiss(xpaths.forms.put);
+		});
+		//bind edit action
+		$(xpaths.record.table.body).on("click", xpaths.buttons.edit, showEditModal);
+		
+		//bind delete action
+		$(xpaths.record.table.body).on("click", xpaths.buttons.delete, showDeleteConfimationModal);
+		
+		//bind confirm delete action
+		$(xpaths.buttons.confirmDelete).click(deleteRecord);
+		
+		showDeleteConfimationModal
+		logging.log(RECORD_NAME + " module initialized!!!");
+
+		//load records
+		loadRecords();
 	};
 
 	return {
