@@ -40,7 +40,7 @@ Feature: User management tests
 		Then Response status code should be 400
 		
 	Scenario: Get user
-		When GET request is submitted to "http://localhost:8999/api/configuration/user/{addedUserId}"
+		When GET request is submitted to "http://localhost:8999/api/configuration/user/{{addedUserId}}"
 		Then Response status code should be 200
 		
 	Scenario: Get all users

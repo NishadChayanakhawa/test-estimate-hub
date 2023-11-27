@@ -20,7 +20,7 @@ Feature: Change type configuration tests
 		Then Response status code should be 200
 		
 	Scenario: Get change type
-		When GET request is submitted to "http://localhost:8999/api/configuration/changeType/{addedChangeTypeId}"
+		When GET request is submitted to "http://localhost:8999/api/configuration/changeType/{{addedChangeTypeId}}"
 		Then Response status code should be 200
 		
 	Scenario: Get all change types

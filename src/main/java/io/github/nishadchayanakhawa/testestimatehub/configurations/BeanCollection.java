@@ -1,9 +1,12 @@
 package io.github.nishadchayanakhawa.testestimatehub.configurations;
 
+import org.hibernate.collection.spi.PersistentCollection;
+import org.modelmapper.Condition;
 //import section
 //model mapper
 import org.modelmapper.ModelMapper;
 import org.modelmapper.config.Configuration;
+import org.modelmapper.spi.MappingContext;
 //spring boot libraries
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -30,6 +33,11 @@ public class BeanCollection {
 		ModelMapper modelMapper = new ModelMapper();
 		modelMapper.getConfiguration().setFieldMatchingEnabled(true)
 				.setFieldAccessLevel(Configuration.AccessLevel.PRIVATE);
+		modelMapper.getConfiguration().setPropertyCondition(new Condition<Object, Object>() {
+			public boolean applies(MappingContext<Object, Object> context) {
+				return !(context.getSource() instanceof PersistentCollection);
+			}
+		});
 		return modelMapper;
 	}
 

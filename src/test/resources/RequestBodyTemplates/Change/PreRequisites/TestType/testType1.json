@@ -1,0 +1,6 @@
+{
+	"name" : "SIT",
+	"relativeTestCaseCountPercentage" : 100,
+	"reExecutionPercentage" : 20,
+	"additionalCycleExecutionPercentage" : 20	
+}

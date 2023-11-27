@@ -1,0 +1,6 @@
+{
+	"name" : "RT",
+	"relativeTestCaseCountPercentage" : 20,
+	"reExecutionPercentage" : 5,
+	"additionalCycleExecutionPercentage" : 5	
+}

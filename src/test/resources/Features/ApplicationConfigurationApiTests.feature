@@ -26,7 +26,7 @@ Feature: Application configuration tests
 		Then Response status code should be 200
 		
 	Scenario: Get application configuration
-		When GET request is submitted to "http://localhost:8999/api/configuration/application/{addedApplicationConfigurationId}"
+		When GET request is submitted to "http://localhost:8999/api/configuration/application/{{addedApplicationConfigurationId}}"
 		Then Response status code should be 200
 		
 	Scenario: Get non-existing application configuration

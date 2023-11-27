@@ -1,0 +1,23 @@
+{
+	"identifier" : "INVALID",
+	"releaseId" : "{{releaseId}}",
+	"summary" : "Intelli Dashboard",
+	"changeTypeId" : "{{changeTypeId}}",
+	"startDate" : "2023-12-02",
+	"endDate" : "2023-12-31",
+	"requirements" : [
+		{
+			"identifier" : "BN01",
+			"summary" : "User Management"
+		},
+		{
+			"identifier" : "BN02",
+			"summary" : "Test Type Management"
+		}
+	],
+	"impactedArea" : [
+		{
+			"id" : "{{applicationConfigurationId2}}"
+		}
+	] 
+}
