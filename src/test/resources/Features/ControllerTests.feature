@@ -15,3 +15,4 @@ Feature: Controller Tests
 			|/configuration/general						|500						|
 			|/configuration/application				|500						|
 			|/release													|500						|
+			|/change													|500						|
