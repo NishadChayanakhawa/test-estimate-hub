@@ -3,6 +3,8 @@ package io.github.nishadchayanakhawa.testestimatehub.services;
 //import section
 //java-util
 import java.util.List;
+import java.util.TreeSet;
+import java.util.Comparator;
 import java.util.HashSet;
 //model mapper
 import org.modelmapper.ModelMapper;
@@ -34,18 +36,30 @@ import io.github.nishadchayanakhawa.testestimatehub.model.Requirement;
 @Transactional
 @Service
 public class ChangeService {
+	
+	/** The Constant logger. */
 	// logger
 	private static final ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory
 			.getLogger(ChangeService.class);
 
+	/** The change repository. */
 	// change type repository
 	private ChangeRepository changeRepository;
 
+	/** The release service. */
 	private ReleaseService releaseService;
 
+	/** The model mapper. */
 	// model mapper
 	private ModelMapper modelMapper;
 
+	/**
+	 * Instantiates a new change service.
+	 *
+	 * @param changeRepository the change repository
+	 * @param releaseService the release service
+	 * @param modelMapper the model mapper
+	 */
 	@Autowired
 	public ChangeService(ChangeRepository changeRepository, ReleaseService releaseService, ModelMapper modelMapper) {
 		this.changeRepository = changeRepository;
@@ -82,7 +96,8 @@ public class ChangeService {
 				Requirement requirementToSave = modelMapper.map(requirementDTO, Requirement.class);
 				changeToSave.addRequirement(requirementToSave);
 			});
-			ChangeDTO savedChangeDTO = modelMapper.map(this.changeRepository.saveAndFlush(changeToSave), ChangeDTO.class);
+			ChangeDTO savedChangeDTO = modelMapper.map(this.changeRepository.saveAndFlush(changeToSave),
+					ChangeDTO.class);
 			logger.debug("Saved change : {}", savedChangeDTO);
 			// return saved change record
 			return savedChangeDTO;
@@ -137,7 +152,7 @@ public class ChangeService {
 		Change change = this.changeRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Change", id));
 		logger.debug("Change debug {}", change);
 		ChangeDTO changeDTO = modelMapper.map(change, ChangeDTO.class);
-		changeDTO.setRequirements(new HashSet<>());
+		changeDTO.setRequirements(new TreeSet<>(Comparator.comparing(RequirementDTO::getIdentifier)));
 		changeDTO.setImpactedArea(new HashSet<>());
 		change.getRequirements().stream().forEach(
 				requirement -> changeDTO.getRequirements().add(modelMapper.map(requirement, RequirementDTO.class)));
@@ -150,12 +165,9 @@ public class ChangeService {
 
 	/**
 	 * <b>Method Name</b>: delete<br>
-	 * <b>Description</b>: Delete change record<br>
-	 * 
-	 * @param changeToDeleteDTO change record to delete as
-	 *                          {@link io.github.nishadchayanakhawa.testestimatehub.model.dto.ChangeDTO
-	 *                          ChangeDTO}. Only id is required, other fields are
-	 *                          ignored and hence can be set to null.
+	 * <b>Description</b>: Delete change record<br>.
+	 *
+	 * @param id the id
 	 */
 	public void delete(Long id) {
 		// delete change record
