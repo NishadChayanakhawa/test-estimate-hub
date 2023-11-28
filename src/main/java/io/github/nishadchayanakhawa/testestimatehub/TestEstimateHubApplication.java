@@ -1,26 +1,34 @@
 package io.github.nishadchayanakhawa.testestimatehub;
 
-//import section
-//spring boot libraries
+// Import section
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * <b>Class Name</b>: TestEstimateHubApplication<br>
- * <b>Description</b>: Test Estimate Hub application runner.<br>
- * 
- * @author nishad.chayanakhawa
+ * <b>Description</b>: Entry point for the Test Estimate Hub application.<br>
+ * This class is annotated with {@code @SpringBootApplication}, indicating that
+ * it is the main configuration class and enabling Spring Boot
+ * auto-configuration.<br>
+ * It contains the main method to start the application.
+ * <p>
+ * <b>Author:</b> nishad.chayanakhawa
+ * </p>
  */
 @SpringBootApplication
 public class TestEstimateHubApplication {
+
 	/**
 	 * <b>Method Name</b>: main<br>
-	 * <b>Description</b>: Main method to start application.<br>
+	 * <b>Description</b>: Main method to start the Test Estimate Hub
+	 * application.<br>
+	 * It launches the Spring Boot application by calling
+	 * {@link SpringApplication#run(Class, String...)}.
 	 * 
-	 * @param args
+	 * @param args Command-line arguments passed to the application.
 	 */
 	public static void main(String[] args) {
-		// run application
+		// Run the Spring Boot application
 		SpringApplication.run(TestEstimateHubApplication.class, args);
 	}
 }

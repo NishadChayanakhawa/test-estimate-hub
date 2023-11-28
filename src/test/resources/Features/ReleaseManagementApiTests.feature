@@ -26,7 +26,7 @@ Feature: Release management tests
 		Then Response status code should be 200
 		
 	Scenario: Get release
-		When GET request is submitted to "http://localhost:8999/api/release/{addedReleaseId}"
+		When GET request is submitted to "http://localhost:8999/api/release/{{addedReleaseId}}"
 		Then Response status code should be 200
 		
 	Scenario: Get releases

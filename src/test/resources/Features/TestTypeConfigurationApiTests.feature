@@ -20,7 +20,7 @@ Feature: Test type configuration tests
 		Then Response status code should be 200
 		
 	Scenario: Get test type
-		When GET request is submitted to "http://localhost:8999/api/configuration/testType/{addedTestTypeId}"
+		When GET request is submitted to "http://localhost:8999/api/configuration/testType/{{addedTestTypeId}}"
 		Then Response status code should be 200
 		
 	Scenario: Get all test types

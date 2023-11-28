@@ -1,0 +1,6 @@
+{
+	"application": "Test Estimate Hub",
+	"module": "Configuration",
+	"subModule": "User Management",
+	"baseTestScriptCount": 10
+}

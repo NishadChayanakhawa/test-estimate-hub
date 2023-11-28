@@ -403,7 +403,7 @@
 		<maven-compiler-plugin.target>17</maven-compiler-plugin.target>
 		<maven-compiler-plugin.encoding>UTF-8</maven-compiler-plugin.encoding>
 		<cucumber.version>7.12.0</cucumber.version>
-		<automation-testing-framework.version>2.2.0</automation-testing-framework.version>
+		<automation-testing-framework.version>2.2.1</automation-testing-framework.version>
 		<webdrivermanager.version>5.6.0</webdrivermanager.version>
 		<jacoco-instruction-coveredratio.minimum>0.8</jacoco-instruction-coveredratio.minimum>
 		<jacoco-branch-coveredratio.minimum>0.8</jacoco-branch-coveredratio.minimum>

@@ -58,4 +58,11 @@
 				name="io.github.nishadchayanakhawa.testestimatehub.tests.apitests.ReleaseManagementApiTests" />
 		</classes>
 	</test>
+	<test name="API Tests : Change Management" parallel="methods"
+		thread-count="1">
+		<classes>
+			<class
+				name="io.github.nishadchayanakhawa.testestimatehub.tests.apitests.ChangeManagementApiTests" />
+		</classes>
+	</test>
 </suite>

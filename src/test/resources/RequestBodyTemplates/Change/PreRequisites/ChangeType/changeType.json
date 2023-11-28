@@ -1,0 +1,7 @@
+{
+	"name": "Major",
+	"testCaseCountModifier": 1.2,
+	"testPlanningEffortAllocationPercentage": 20,
+	"testPreparationEffortAllocationPercentage": 15,
+	"managementEffortAllocationPercentage": 10
+}

@@ -90,10 +90,13 @@ public class GeneralConfigurationService {
 	 *         GeneralConfigurationDTO}
 	 */
 	public GeneralConfigurationDTO get() {
-		GeneralConfigurationDTO generalConfiguration = modelMapper.map(this.generalConfigurationRepository.findById(1L)
-				.orElseThrow(() -> new EntityNotFoundException("General Configuration", 1L)),
+		GeneralConfiguration generalConfiguration = this.generalConfigurationRepository.findById(1L)
+				.orElseThrow(() -> new EntityNotFoundException("General Configuration", 1L));
+		GeneralConfigurationDTO generalConfigurationDTO = modelMapper.map(generalConfiguration,
 				GeneralConfigurationDTO.class);
-		logger.trace("General configuraion found: {}", generalConfiguration);
-		return generalConfiguration;
+		generalConfigurationDTO.setTestDesignProductivity(generalConfiguration.getTestDesignProductivity());
+		generalConfigurationDTO.setTestExecutionProductivity(generalConfiguration.getTestExecutionProductivity());
+		logger.trace("General configuraion found: {}", generalConfigurationDTO);
+		return generalConfigurationDTO;
 	}
 }

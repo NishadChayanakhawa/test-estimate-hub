@@ -55,7 +55,7 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
 	private TestTypeService testTypeService;
 	private GeneralConfigurationService generalConfigurationService;
 	
-	private static boolean areDefaultUsersLoaded=false;
+	private boolean areDefaultUsersLoaded=false;
 
 	@Autowired
 	public CommandLineAppStartupRunner(UserService userService,
@@ -79,7 +79,7 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
 			loadDefaultTestTypes();
 			loadDefaultGeneralConfiguration();
 			logger.info("Application started. Please navigate to http://localhost:8999/login");
-			if(CommandLineAppStartupRunner.areDefaultUsersLoaded) {
+			if(areDefaultUsersLoaded) {
 				logger.info("Please login with username and password as 'admin'.");
 			}
 		} catch (Exception e) {
@@ -96,7 +96,7 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
 				UserDTO savedUser = this.userService.save(user);
 				logger.info("User Saved: {}", savedUser);
 			});
-			CommandLineAppStartupRunner.areDefaultUsersLoaded=true;
+			areDefaultUsersLoaded=true;
 		}
 	}
 
