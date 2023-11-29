@@ -46,6 +46,10 @@ Feature: Application configuration tests
 		Then Response status code should be 201
 		And Save value at Json Path "id" in response, to variable "changeId"
 		
+	Scenario: Get change with depth 0
+		When GET request is submitted to "http://localhost:8999/api/change/{{changeId}}"
+		Then Response status code should be 200
+		
 	Scenario: Add duplicate change
 		Given In request header, set "Content-Type" to "application/json"
 		And Request body template is loaded from file "Change/addChange.json"
@@ -82,8 +86,8 @@ Feature: Application configuration tests
 		When PUT request is submitted to "http://localhost:8999/api/change"
 		Then Response status code should be 409
 		
-	Scenario: Get change
-		When GET request is submitted to "http://localhost:8999/api/change/{{changeId}}"
+	Scenario: Get change with depth 1
+		When GET request is submitted to "http://localhost:8999/api/change/{{changeId}}?depth=1"
 		Then Response status code should be 200
 		And Save value at Json Path "requirements[1].id" in response, to variable "requirementId2"
 		
@@ -99,6 +103,44 @@ Feature: Application configuration tests
 		
 	Scenario: Get all changes
 		When GET request is submitted to "http://localhost:8999/api/change"
+		Then Response status code should be 200
+		
+	Scenario: Add use case
+		Given In request header, set "Content-Type" to "application/json"
+		And Request body template is loaded from file "UseCase/addUseCase.json"
+		When PUT request is submitted to "http://localhost:8999/api/useCase"
+		Then Response status code should be 201
+		And Save value at Json Path "id" in response, to variable "useCaseId"
+		
+	Scenario: Update use case
+		Given In request header, set "Content-Type" to "application/json"
+		And Request body template is loaded from file "UseCase/updateUseCase.json"
+		When PUT request is submitted to "http://localhost:8999/api/useCase"
+		Then Response status code should be 200
+		
+	Scenario: Update change after adding use case
+		Given In request header, set "Content-Type" to "application/json"
+		And Request body template is loaded from file "Change/updateChangeAfterAddingCase.json"
+		When PUT request is submitted to "http://localhost:8999/api/change"
+		Then Response status code should be 200
+		
+	Scenario: Get change with depth 2
+		When GET request is submitted to "http://localhost:8999/api/change/{{changeId}}?depth=2"
+		Then Response status code should be 200
+		
+	Scenario: Get change with depth 3
+		When GET request is submitted to "http://localhost:8999/api/change/{{changeId}}?depth=3"
+		Then Response status code should be 200
+		
+	Scenario: Delete use case
+		Given In request header, set "Content-Type" to "application/json"
+		And Request body template is loaded from file "deleteRecord.json"
+		And In request body template, replace "${id}" with value of variable "useCaseId"
+		When DELETE request is submitted to "http://localhost:8999/api/useCase"
+		Then Response status code should be 200
+		
+	Scenario: Get change with depth 3 after deleting use case
+		When GET request is submitted to "http://localhost:8999/api/change/{{changeId}}?depth=3"
 		Then Response status code should be 200
 		
 	Scenario: Delete change

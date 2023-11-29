@@ -1,0 +1,18 @@
+{
+	"requirementId" : "{{requirementId2}}",
+	"summary" : "First use case",
+	"businessFunctionalityId" : "{{applicationConfigurationId1}}",
+	"dataVariationCount" : 2,
+	"testConfigurationComplexityCode" : "VERY_LOW",
+	"testDataSetupComplexityCode" : "LOW",
+	"testTransactionComplexityCode" : "HIGH",
+	"testValidationComplexityCode" : "VERY_HIGH",
+	"applicableTestTypes" : [
+		{
+			"id" : "{{testTypeId1}}"
+		},
+		{
+			"id" : "{{testTypeId2}}"
+		}
+	]
+}
