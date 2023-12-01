@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 //constants, models and services
 import io.github.nishadchayanakhawa.testestimatehub.configurations.TestEstimateHubConstants;
@@ -76,11 +77,11 @@ public class ChangeManagementApi {
 	 *         ChangeDTO}
 	 */
 	@GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	ResponseEntity<ChangeDTO> getChange(@PathVariable Long id) {
+	ResponseEntity<ChangeDTO> getChange(@PathVariable Long id,@RequestParam(name="depth",defaultValue="0") int depth) {
 		logger.debug(TestEstimateHubConstants.SERVING_GET_REQUEST_DEBUG_MESSAGE, "GET",
 				TestEstimateHubConstants.CHANGE_MANAGEMENT_API, id);
 		// return test type record
-		return new ResponseEntity<>(this.changeService.get(id), HttpStatus.OK);
+		return new ResponseEntity<>(this.changeService.get(id,depth), HttpStatus.OK);
 	}
 
 	/**

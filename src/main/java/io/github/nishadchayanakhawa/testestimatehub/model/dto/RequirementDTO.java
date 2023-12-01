@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.NonNull;
+import java.util.Set;
 
 /**
  * <b>Class Name</b>: RequirementDTO<br>
@@ -37,4 +38,7 @@ public class RequirementDTO {
 	@NonNull
 	@Setter(AccessLevel.NONE)
 	private String summary;
+	
+	// use cases
+	Set<UseCaseDTO> useCases;
 }

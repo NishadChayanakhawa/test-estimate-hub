@@ -15,6 +15,7 @@ public class TestEstimateHubConstants {
 	
 	public static final String RELEASE_MANAGEMENT_API= API + "/release";
 	public static final String CHANGE_MANAGEMENT_API= API + "/change";
+	public static final String USE_CASE_MANAGEMENT_API= API + "/useCase";
 	
 	public static final String SERVING_REQUEST_DEBUG_MESSAGE="Serving {} request for {}";
 	public static final String SERVING_GET_REQUEST_DEBUG_MESSAGE="Serving {} request for {}/{}";

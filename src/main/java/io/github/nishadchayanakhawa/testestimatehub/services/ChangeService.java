@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.github.nishadchayanakhawa.testestimatehub.repositories.ChangeRepository;
+import io.github.nishadchayanakhawa.testestimatehub.repositories.RequirementRepository;
 import io.github.nishadchayanakhawa.testestimatehub.services.exceptions.DuplicateEntityException;
 import io.github.nishadchayanakhawa.testestimatehub.services.exceptions.EntityNotFoundException;
 import io.github.nishadchayanakhawa.testestimatehub.services.exceptions.TransactionException;
@@ -24,6 +25,8 @@ import io.github.nishadchayanakhawa.testestimatehub.model.dto.ApplicationConfigu
 import io.github.nishadchayanakhawa.testestimatehub.model.dto.ChangeDTO;
 import io.github.nishadchayanakhawa.testestimatehub.model.dto.ReleaseDTO;
 import io.github.nishadchayanakhawa.testestimatehub.model.dto.RequirementDTO;
+import io.github.nishadchayanakhawa.testestimatehub.model.dto.TestTypeDTO;
+import io.github.nishadchayanakhawa.testestimatehub.model.dto.UseCaseDTO;
 import io.github.nishadchayanakhawa.testestimatehub.model.Change;
 import io.github.nishadchayanakhawa.testestimatehub.model.Requirement;
 
@@ -36,7 +39,7 @@ import io.github.nishadchayanakhawa.testestimatehub.model.Requirement;
 @Transactional
 @Service
 public class ChangeService {
-	
+
 	/** The Constant logger. */
 	// logger
 	private static final ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory
@@ -45,6 +48,8 @@ public class ChangeService {
 	/** The change repository. */
 	// change type repository
 	private ChangeRepository changeRepository;
+
+	private RequirementRepository requirementRepository;
 
 	/** The release service. */
 	private ReleaseService releaseService;
@@ -57,12 +62,14 @@ public class ChangeService {
 	 * Instantiates a new change service.
 	 *
 	 * @param changeRepository the change repository
-	 * @param releaseService the release service
-	 * @param modelMapper the model mapper
+	 * @param releaseService   the release service
+	 * @param modelMapper      the model mapper
 	 */
 	@Autowired
-	public ChangeService(ChangeRepository changeRepository, ReleaseService releaseService, ModelMapper modelMapper) {
+	public ChangeService(ChangeRepository changeRepository, RequirementRepository requirementRepository,
+			ReleaseService releaseService, ModelMapper modelMapper) {
 		this.changeRepository = changeRepository;
+		this.requirementRepository = requirementRepository;
 		this.releaseService = releaseService;
 		this.modelMapper = modelMapper;
 	}
@@ -94,6 +101,13 @@ public class ChangeService {
 			changeToSave.setRequirements(new HashSet<>());
 			changeToSaveDTO.getRequirements().stream().forEach(requirementDTO -> {
 				Requirement requirementToSave = modelMapper.map(requirementDTO, Requirement.class);
+				if (requirementToSave.getId() == null) {
+					requirementToSave.setUseCases(new HashSet<>());
+				} else {
+					requirementToSave.setUseCases(
+							this.requirementRepository.findById(requirementToSave.getId()).get().getUseCases());
+				}
+
 				changeToSave.addRequirement(requirementToSave);
 			});
 			ChangeDTO savedChangeDTO = modelMapper.map(this.changeRepository.saveAndFlush(changeToSave),
@@ -146,18 +160,37 @@ public class ChangeService {
 	 *         {@link io.github.nishadchayanakhawa.testestimatehub.model.dto.ChangeDTO
 	 *         ChangeDTO}
 	 */
-	public ChangeDTO get(Long id) {
+	public ChangeDTO get(Long id, int depth) {
 		// retreive change based on id
 		logger.debug("Retreiving change for id {}", id);
 		Change change = this.changeRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Change", id));
 		logger.debug("Change debug {}", change);
 		ChangeDTO changeDTO = modelMapper.map(change, ChangeDTO.class);
-		changeDTO.setRequirements(new TreeSet<>(Comparator.comparing(RequirementDTO::getIdentifier)));
-		changeDTO.setImpactedArea(new HashSet<>());
-		change.getRequirements().stream().forEach(
-				requirement -> changeDTO.getRequirements().add(modelMapper.map(requirement, RequirementDTO.class)));
-		change.getImpactedArea().stream().forEach(
-				impact -> changeDTO.getImpactedArea().add(modelMapper.map(impact, ApplicationConfigurationDTO.class)));
+
+		if (depth > 0) {
+			changeDTO.setRequirements(new TreeSet<>(Comparator.comparing(RequirementDTO::getIdentifier)));
+			changeDTO.setImpactedArea(new HashSet<>());
+			change.getRequirements().stream().forEach(requirement -> {
+				RequirementDTO requirementDTO = modelMapper.map(requirement, RequirementDTO.class);
+				if (depth > 1) {
+					requirementDTO.setUseCases(new HashSet<>());
+					requirement.getUseCases().stream().forEach(useCase -> {
+						UseCaseDTO useCaseDTO = modelMapper.map(useCase, UseCaseDTO.class);
+						if (depth > 2) {
+							useCaseDTO.setApplicableTestTypes(new HashSet<>());
+							useCase.getApplicableTestTypes().stream().forEach(testType -> {
+								TestTypeDTO testTypeDTO = modelMapper.map(testType, TestTypeDTO.class);
+								useCaseDTO.getApplicableTestTypes().add(testTypeDTO);
+							});
+						}
+						requirementDTO.getUseCases().add(useCaseDTO);
+					});
+				}
+				changeDTO.getRequirements().add(requirementDTO);
+			});
+			change.getImpactedArea().stream().forEach(impact -> changeDTO.getImpactedArea()
+					.add(modelMapper.map(impact, ApplicationConfigurationDTO.class)));
+		}
 		logger.debug("Retreived change: {}", changeDTO);
 		// return change
 		return changeDTO;
@@ -165,7 +198,8 @@ public class ChangeService {
 
 	/**
 	 * <b>Method Name</b>: delete<br>
-	 * <b>Description</b>: Delete change record<br>.
+	 * <b>Description</b>: Delete change record<br>
+	 * .
 	 *
 	 * @param id the id
 	 */
