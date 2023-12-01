@@ -118,6 +118,10 @@ Feature: Application configuration tests
 		When PUT request is submitted to "http://localhost:8999/api/useCase"
 		Then Response status code should be 200
 		
+	Scenario: Get all use cases
+		When GET request is submitted to "http://localhost:8999/api/useCase/byRequirement/{{requirementId2}}"
+		Then Response status code should be 200
+		
 	Scenario: Update change after adding use case
 		Given In request header, set "Content-Type" to "application/json"
 		And Request body template is loaded from file "Change/updateChangeAfterAddingCase.json"
@@ -132,12 +136,20 @@ Feature: Application configuration tests
 		When GET request is submitted to "http://localhost:8999/api/change/{{changeId}}?depth=3"
 		Then Response status code should be 200
 		
+	Scenario: Get use case
+		When GET request is submitted to "http://localhost:8999/api/useCase/{{useCaseId}}"
+		Then Response status code should be 200
+		
 	Scenario: Delete use case
 		Given In request header, set "Content-Type" to "application/json"
 		And Request body template is loaded from file "deleteRecord.json"
 		And In request body template, replace "${id}" with value of variable "useCaseId"
 		When DELETE request is submitted to "http://localhost:8999/api/useCase"
 		Then Response status code should be 200
+		
+	Scenario: Get use case after deleting
+		When GET request is submitted to "http://localhost:8999/api/useCase/{{useCaseId}}"
+		Then Response status code should be 410
 		
 	Scenario: Get change with depth 3 after deleting use case
 		When GET request is submitted to "http://localhost:8999/api/change/{{changeId}}?depth=3"

@@ -119,7 +119,7 @@ var changeProcessing = (function() {
 		$(this).indicateButtonProcessing();
 		var recordId=$(this).attr('id').split("_")[1];
 		logging.log("Record id: " + recordId);
-		apiHandling.processRequest("get", API_PATH + "/" + recordId, csrfToken)
+		apiHandling.processRequest("get", API_PATH + "/" + recordId + "?depth=1", csrfToken)
 			.done(data => showEditModal_success(data,$(this)))
 			.catch(error => showEditModal_failure(error,$(this)));
 	};

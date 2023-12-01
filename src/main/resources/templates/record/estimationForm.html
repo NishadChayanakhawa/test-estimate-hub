@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:insert="~{BasePage :: headSection(title=~{::title/text()},script=~{::script},style=~{::style},link=~{::link})}"
+	th:remove="tag">
+	<title>Test Estimate Hub</title>
+
+	<script th:src="@{/application/js/record/estimationFormProcessing.js}"></script>
+
+	<script>
+		$(document).ready(function () {
+			estimationFormProcessing.init();
+		});
+	</script>
+	<script id="recordListTemplate" type="text/template">
+		<tr>
+			<td id="recordIdentifier_${id}_1">${summary}</td>
+			<td>
+				<button class="border-0 bg-transparent" id="editRecordButton_${id}">
+					<i class="fa fa-edit"></i> Edit
+				</button>
+				<button class="border-0 bg-transparent text-danger" id="deleteRecordButton_${id}">
+					<i class="fa fa-trash"></i> Delete
+				</button>
+			</td>
+		</tr>
+	</script>
+</head>
+
+<body>
+	<input th:replace="~{BasePage :: csrfElement}" />
+
+	<nav th:replace="~{BasePage :: pageHeader(subTitle='Estimation Form')}"></nav>
+	
+	<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel"
+		aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 class="modal-title fs-5" id="deleteConfirmationModalLabel">Delete User
+						Record</h1>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<form id="deleteRecordForm">
+						<input type="hidden" class="form-control" id="deleteRecordId" name="id" required />
+						Confirm delete operation for '<span class="fw-bold text-danger"
+							id="deleteRecordIdentifierDisplay"></span>'
+						<hr>
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+						<button id="confirmDeleteOperation" type="submit" class="btn btn-danger">Confirm Delete</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade" id="putRecordModal" tabindex="-1" aria-labelledby="putRecordModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-xl">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 class="modal-title fs-5" id="putRecordModalLabel">Use Case Record</h1>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<form id="putRecordForm" autocomplete="off">
+						<div class="row mb-3">
+							<input type="hidden" class="form-control" id="id" name="id" />
+							<input type="hidden" class="form-control" id="requirementId" name="requirementId"
+								required />
+
+							<div class="col-12">
+								<label class="form-label" for="summary">Summary</label>
+								<input type="text" class="form-control" id="summary" name="summary" required>
+							</div>
+
+							<div class="col-9 mt-1">
+								<label class="form-label" for="businessFunctionalityId">Functionality</label>
+								<select class="form-select" id="businessFunctionalityId" name="businessFunctionalityId"
+									required>
+									<th:block th:each="businessFunctionality : ${change.impactedArea}">
+										<option th:value="${businessFunctionality.id}"
+											th:text="${businessFunctionality.application} + ' - ' + ${businessFunctionality.module} + ' - ' + ${businessFunctionality.subModule}">
+											July 2023
+										</option>
+									</th:block>
+								</select>
+							</div>
+
+							<div class="col-3 mt-1">
+								<label class="form-label" for="dataVariationCount">Data Variation Count</label>
+								<input type="text" class="form-control" id="dataVariationCount"
+									name="dataVariationCount" required>
+							</div>
+							<div class="col-3 mt-1">
+								<label class="form-label" for="testConfigurationComplexityCode">Configuration
+									complexity</label>
+								<select class="form-select" id="testConfigurationComplexityCode"
+									name="testConfigurationComplexityCode" required>
+									<option value="VERY_LOW">Very Low</option>
+									<option value="LOW">Low</option>
+									<option value="MEDIUM">Medium</option>
+									<option value="HIGH">High</option>
+									<option value="VERY_HIGH">Very High</option>
+								</select>
+							</div>
+							<div class="col-3 mt-1">
+								<label class="form-label" for="testDataSetupComplexityCode">Data complexity</label>
+								<select class="form-select" id="testDataSetupComplexityCode"
+									name="testDataSetupComplexityCode" required>
+									<option value="VERY_LOW">Very Low</option>
+									<option value="LOW">Low</option>
+									<option value="MEDIUM">Medium</option>
+									<option value="HIGH">High</option>
+									<option value="VERY_HIGH">Very High</option>
+								</select>
+							</div>
+							<div class="col-3 mt-1">
+								<label class="form-label" for="testTransactionComplexityCode">Transaction
+									complexity</label>
+								<select class="form-select" id="testTransactionComplexityCode"
+									name="testTransactionComplexityCode" required>
+									<option value="VERY_LOW">Very Low</option>
+									<option value="LOW">Low</option>
+									<option value="MEDIUM">Medium</option>
+									<option value="HIGH">High</option>
+									<option value="VERY_HIGH">Very High</option>
+								</select>
+							</div>
+							<div class="col-3 mt-1">
+								<label class="form-label" for="testValidationComplexityCode">Validation
+									complexity</label>
+								<select class="form-select" id="testValidationComplexityCode"
+									name="testValidationComplexityCode" required>
+									<option value="VERY_LOW">Very Low</option>
+									<option value="LOW">Low</option>
+									<option value="MEDIUM">Medium</option>
+									<option value="HIGH">High</option>
+									<option value="VERY_HIGH">Very High</option>
+								</select>
+							</div>
+
+							<label class="form-label mt-1" for="applicableTestTypes">Select applicable test
+								types</label>
+							<div class="btn-group" role="group" aria-label="testType-selection">
+								<th:block th:each="testType : ${testTypes}">
+									<input type="checkbox" class="btn-check" name="applicableTestTypes"
+										th:id="'applicableTestTypes' + ${testType.id}" th:value="${testType.id}"
+										autocomplete="off">
+									<label class="btn btn-outline-primary"
+										th:for="'applicableTestTypes' + ${testType.id}" th:text="${testType.name}">Test
+										Type Name</label>
+								</th:block>
+							</div>
+						</div>
+						<hr>
+						<button id="dismissModal" type="button" class="btn btn-secondary"
+							data-bs-dismiss="modal">Close</button>
+						<button id="saveRecordButton" type="submit" class="btn btn-primary">Save changes</button>
+
+					</form>
+
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+	<div class="m-2">
+		<div class="card">
+			<div class="card-header"
+				th:text="${change.releaseIdentifier} + ' > ' + ${change.identifier} + ' - ' + ${change.summary}">
+				Featured
+			</div>
+			<div class="card-body">
+				<span class="fw-bold">Release</span> : <span
+					th:text="${change.releaseIdentifier} + ' - ' + ${change.releaseName}"></span><br>
+				<span class="fw-bold">Change Type</span> : <span th:text="${change.changeTypeName}"></span><br>
+				<span class="fw-bold">Schedule</span> : <span
+					th:text="${change.startDate} + ' to ' + ${change.endDate}"></span>
+			</div>
+		</div>
+		<div class="accordion mt-2" id="accordionRequirement">
+			<th:block th:each="requirement : ${change.requirements}">
+				<div class="accordion-item">
+					<h2 class="accordion-header">
+						<button th:id="'accordianButton_' + ${requirement.id}" class="accordion-button collapsed"
+							type="button" data-bs-toggle="collapse" th:data-bs-target="'#collapse' + ${requirement.id}"
+							aria-expanded="true" th:aria-controls="'collapse' + ${requirement.id}"
+							th:text="${requirement.identifier} + ' - ' + ${requirement.summary}">
+							Accordion Item
+						</button>
+					</h2>
+					<div th:id="'collapse' + ${requirement.id}" class="accordion-collapse collapse bg-primary-subtle"
+						data-bs-parent="#accordionRequirement">
+						<div class="accordion-body">
+							<button class="btn btn-sm btn-primary mb-1" th:id="'addRecordButton_' + ${requirement.id}"
+								sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_TEST_MANAGER','ROLE_TEST_LEAD')">
+								<i class="fa fa-plus"></i> Add Use Case
+							</button>
+							<table class="table table-striped table-primary" th:id="'recordTable_' + ${requirement.id}">
+								<caption th:text="'Use cases for requirement ' + ${requirement.identifier}">Use Cases
+								</caption>
+								<thead>
+									<tr th:id="'recordTableHeader_' + ${requirement.id}">
+										<th>Summary</th>
+										<th>Actions</th>
+									</tr>
+								</thead>
+								<tbody th:id="'recordTableBody_' + ${requirement.id}">
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</th:block>
+		</div>
+	</div>
+</body>
+
+</html>
