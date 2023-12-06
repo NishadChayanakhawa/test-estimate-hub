@@ -112,12 +112,6 @@ Feature: Application configuration tests
 		Then Response status code should be 201
 		And Save value at Json Path "id" in response, to variable "useCaseId"
 		
-	Scenario: Update use case
-		Given In request header, set "Content-Type" to "application/json"
-		And Request body template is loaded from file "UseCase/updateUseCase.json"
-		When PUT request is submitted to "http://localhost:8999/api/useCase"
-		Then Response status code should be 200
-		
 	Scenario: Get all use cases
 		When GET request is submitted to "http://localhost:8999/api/useCase/byRequirement/{{requirementId2}}"
 		Then Response status code should be 200
@@ -140,6 +134,34 @@ Feature: Application configuration tests
 		When GET request is submitted to "http://localhost:8999/api/useCase/{{useCaseId}}"
 		Then Response status code should be 200
 		
+	Scenario: Calculate estimates
+		Given In request header, set "Content-Type" to "application/json"
+		And Request body template is loaded from file "deleteRecord.json"
+		And In request body template, replace "${id}" with value of variable "changeId"
+		When POST request is submitted to "http://localhost:8999/api/change/estimate"
+		Then Response status code should be 200
+		
+	Scenario: Get change with depth 4
+		When GET request is submitted to "http://localhost:8999/api/change/{{changeId}}?depth=4"
+		Then Response status code should be 200
+		
+	Scenario: Update use case
+		Given In request header, set "Content-Type" to "application/json"
+		And Request body template is loaded from file "UseCase/updateUseCase.json"
+		When PUT request is submitted to "http://localhost:8999/api/useCase"
+		Then Response status code should be 200
+		
+	Scenario: Calculate estimates again
+		Given In request header, set "Content-Type" to "application/json"
+		And Request body template is loaded from file "deleteRecord.json"
+		And In request body template, replace "${id}" with value of variable "changeId"
+		When POST request is submitted to "http://localhost:8999/api/change/estimate"
+		Then Response status code should be 200
+		
+	Scenario: Get change with depth 4 again
+		When GET request is submitted to "http://localhost:8999/api/change/{{changeId}}?depth=4"
+		Then Response status code should be 200
+		
 	Scenario: Delete use case
 		Given In request header, set "Content-Type" to "application/json"
 		And Request body template is loaded from file "deleteRecord.json"
@@ -154,6 +176,10 @@ Feature: Application configuration tests
 	Scenario: Get change with depth 3 after deleting use case
 		When GET request is submitted to "http://localhost:8999/api/change/{{changeId}}?depth=3"
 		Then Response status code should be 200
+		
+	Scenario: Validate controller - /estimationForm 
+    When GET request is submitted to "http://localhost:8999/estimationForm/{{changeId}}"
+    Then Response status code should be 500
 		
 	Scenario: Delete change
 		Given In request header, set "Content-Type" to "application/json"

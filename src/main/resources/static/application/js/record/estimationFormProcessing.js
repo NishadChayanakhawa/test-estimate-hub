@@ -36,6 +36,48 @@ var estimationFormProcessing = (function() {
 		}
 	};
 	
+	var calculateEstimate = function(event) {
+		event.preventDefault();
+		logging.log("Calculating estimation");
+		var calculateEstimationRequest={
+			"id" : $("#changeId").val()
+		};
+		$("#calculateEstimatesButton").indicateButtonProcessing();
+		apiHandling.processRequest("post", "/api/change/estimate", csrfToken,calculateEstimationRequest)
+			.done(data => calculateEstimate_success(data))
+			.catch(error => calculateEstimate_failure(error));
+	};
+	
+	var calculateEstimate_success=function(change) {
+		logging.log(change);
+		$("#changeEstimateBody").html("");
+		$("#estimateTemplate").tmpl(change.estimationSummaryRecords).appendTo("#changeEstimateBody");
+		$("td#designEfforts").html(change.designEfforts);
+		$("td#executionEfforts").html(change.executionEfforts);
+		$("td#planningEfforts").html(change.planningEfforts);
+		$("td#preparationEfforts").html(change.preparationEfforts);
+		$("td#managementEfforts").html(change.managementEfforts);
+		$("th#totalEfforts").html(change.totalEfforts);
+		
+		logging.log(change.requirements);
+		$("#accordionEstimationSummary").html("");
+		$("#estimateDetailsTemplate").tmpl(change.requirements).appendTo("#accordionEstimationSummary");
+		$("#calculateEstimatesButton").indicateButtonProcessingCompleted();
+		$("#estimationReviewModal").modal('show');
+	};
+	
+	var calculateEstimate_failure=function(error) {
+		logging.log(error);
+		$("#calculateEstimatesButton").indicateButtonProcessingCompleted();
+	};
+	
+	/**
+	 * 
+	 * 
+	 */
+	
+	
+	
 	var showDeleteConfimationModal=function(event) {
 		event.preventDefault();
 		logging.log("Showing delete modal");
@@ -224,6 +266,8 @@ var estimationFormProcessing = (function() {
 		//bind confirm delete action
 		$(xpaths.buttons.confirmDelete).click(deleteRecord);
 		loadUseCases();
+		
+		$("#calculateEstimatesButton").click(calculateEstimate);
 
 		logging.log("Estimation form processing page initialized!!!");
 	};

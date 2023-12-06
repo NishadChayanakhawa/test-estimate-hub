@@ -14,6 +14,7 @@ import io.github.nishadchayanakhawa.testestimatehub.repositories.UseCaseReposito
 import io.github.nishadchayanakhawa.testestimatehub.services.exceptions.EntityNotFoundException;
 import io.github.nishadchayanakhawa.testestimatehub.model.Requirement;
 import io.github.nishadchayanakhawa.testestimatehub.model.UseCase;
+import io.github.nishadchayanakhawa.testestimatehub.model.dto.EstimationDetailDTO;
 import io.github.nishadchayanakhawa.testestimatehub.model.dto.TestTypeDTO;
 import io.github.nishadchayanakhawa.testestimatehub.model.dto.UseCaseDTO;
 
@@ -38,6 +39,14 @@ public class UseCaseService {
 
 	public UseCaseDTO save(UseCaseDTO useCaseToSave) {
 		logger.debug("Saving use case: {}", useCaseToSave);
+		if (useCaseToSave.getId() == null) {
+			useCaseToSave.setEstimationDetails(new HashSet<>());
+		} else {
+			UseCase originalUseCase = this.useCaseRepository.findById(useCaseToSave.getId()).get();
+			useCaseToSave.setEstimationDetails(originalUseCase.getEstimationDetails().stream()
+					.map(estimationDetail -> this.modelMapper.map(estimationDetail, EstimationDetailDTO.class))
+					.collect(Collectors.toSet()));
+		}
 		UseCaseDTO savedUseCase = this.modelMapper.map(
 				this.useCaseRepository.saveAndFlush(this.modelMapper.map(useCaseToSave, UseCase.class)),
 				UseCaseDTO.class);
@@ -48,10 +57,10 @@ public class UseCaseService {
 	public UseCaseDTO get(Long id) {
 		UseCase useCase = this.useCaseRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Use Case", id));
-		UseCaseDTO useCaseDTO=this.modelMapper.map(useCase, UseCaseDTO.class);
+		UseCaseDTO useCaseDTO = this.modelMapper.map(useCase, UseCaseDTO.class);
 		useCaseDTO.setApplicableTestTypes(new HashSet<>());
 		useCase.getApplicableTestTypes().stream().forEach(testType -> {
-			TestTypeDTO testTypeDTO=this.modelMapper.map(testType, TestTypeDTO.class);
+			TestTypeDTO testTypeDTO = this.modelMapper.map(testType, TestTypeDTO.class);
 			useCaseDTO.getApplicableTestTypes().add(testTypeDTO);
 		});
 		return useCaseDTO;

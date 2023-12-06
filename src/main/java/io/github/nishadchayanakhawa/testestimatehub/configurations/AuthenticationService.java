@@ -1,11 +1,14 @@
 package io.github.nishadchayanakhawa.testestimatehub.configurations;
 
+//import section
+//spring libraries
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+//spring-security libraries
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
-
+//model and repository
 import io.github.nishadchayanakhawa.testestimatehub.model.User;
 import io.github.nishadchayanakhawa.testestimatehub.repositories.UserRepository;
 
@@ -22,6 +25,7 @@ import io.github.nishadchayanakhawa.testestimatehub.repositories.UserRepository;
 @Service
 public class AuthenticationService implements UserDetailsService {
 
+	//User repository
 	private final UserRepository userRepository;
 
 	/**

@@ -1,9 +1,14 @@
 package io.github.nishadchayanakhawa.testestimatehub.configurations;
 
+//import section
+//jpa
 import org.hibernate.collection.spi.PersistentCollection;
+//model mapper
 import org.modelmapper.ModelMapper;
 import org.modelmapper.config.Configuration;
+//spring libraries
 import org.springframework.context.annotation.Bean;
+//spring-security libraries
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;

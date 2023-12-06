@@ -49,4 +49,12 @@ public class ChangeDTO {
 	private Set<RequirementDTO> requirements;
 	// impacted areas
 	private Set<ApplicationConfigurationDTO> impactedArea;
+	private Set<EstimationSummaryDTO> estimationSummaryRecords;
+	
+	private double designEfforts;
+	private double executionEfforts;
+	private double planningEfforts;
+	private double preparationEfforts;
+	private double managementEfforts;
+	private double totalEfforts;
 }
