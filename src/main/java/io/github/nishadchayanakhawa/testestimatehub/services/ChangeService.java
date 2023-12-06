@@ -47,7 +47,6 @@ import io.github.nishadchayanakhawa.testestimatehub.model.UseCase;
 import io.github.nishadchayanakhawa.testestimatehub.model.EstimationDetail;
 import io.github.nishadchayanakhawa.testestimatehub.model.EstimationSummary;
 
-// TODO: Auto-generated Javadoc
 /**
  * <b>Class Name</b>: ChangeService<br>
  * <b>Description</b>: Service for change entity.<br>
@@ -207,35 +206,9 @@ public class ChangeService {
 		ChangeDTO changeDTO = modelMapper.map(change, ChangeDTO.class);
 
 		if (depth > 0) {
-			changeDTO.setRequirements(new TreeSet<>(Comparator.comparing(RequirementDTO::getIdentifier)));
+			changeDTO.setRequirements(this.getRequirements(change, depth));
 			changeDTO.setImpactedArea(new HashSet<>());
 			changeDTO.setEstimationSummaryRecords(new HashSet<>());
-			change.getRequirements().stream().forEach(requirement -> {
-				RequirementDTO requirementDTO = modelMapper.map(requirement, RequirementDTO.class);
-				if (depth > 1) {
-					requirementDTO.setUseCases(new HashSet<>());
-					requirement.getUseCases().stream().forEach(useCase -> {
-						UseCaseDTO useCaseDTO = modelMapper.map(useCase, UseCaseDTO.class);
-						if (depth > 2) {
-							useCaseDTO.setApplicableTestTypes(new HashSet<>());
-							useCase.getApplicableTestTypes().stream().forEach(testType -> {
-								TestTypeDTO testTypeDTO = modelMapper.map(testType, TestTypeDTO.class);
-								useCaseDTO.getApplicableTestTypes().add(testTypeDTO);
-								if (depth > 3) {
-									useCaseDTO.setEstimationDetails(new HashSet<>());
-									useCase.getEstimationDetails().stream().forEach(estimationDetail -> {
-										EstimationDetailDTO estimationDetailDTO = this.modelMapper.map(estimationDetail,
-												EstimationDetailDTO.class);
-										useCaseDTO.getEstimationDetails().add(estimationDetailDTO);
-									});
-								}
-							});
-						}
-						requirementDTO.getUseCases().add(useCaseDTO);
-					});
-				}
-				changeDTO.getRequirements().add(requirementDTO);
-			});
 			change.getImpactedArea().stream().forEach(impact -> changeDTO.getImpactedArea()
 					.add(modelMapper.map(impact, ApplicationConfigurationDTO.class)));
 			change.getEstimationSummaryRecords().stream()
@@ -245,6 +218,43 @@ public class ChangeService {
 		logger.debug("Retreived change: {}", changeDTO);
 		// return change
 		return changeDTO;
+	}
+
+	private Set<RequirementDTO> getRequirements(Change change, int depth) {
+		Set<RequirementDTO> requirements = new TreeSet<>(Comparator.comparing(RequirementDTO::getIdentifier));
+
+		change.getRequirements().stream().forEach(requirement -> {
+			RequirementDTO requirementDTO = modelMapper.map(requirement, RequirementDTO.class);
+			if (depth > 1) {
+				requirementDTO.setUseCases(this.getUseCases(requirement, depth));
+			}
+			requirements.add(requirementDTO);
+		});
+		return requirements;
+	}
+
+	private Set<UseCaseDTO> getUseCases(Requirement requirement, int depth) {
+		Set<UseCaseDTO> useCases = new HashSet<>();
+		requirement.getUseCases().stream().forEach(useCase -> {
+			UseCaseDTO useCaseDTO = modelMapper.map(useCase, UseCaseDTO.class);
+			if (depth > 2) {
+				useCaseDTO.setApplicableTestTypes(new HashSet<>());
+				useCase.getApplicableTestTypes().stream().forEach(testType -> {
+					TestTypeDTO testTypeDTO = modelMapper.map(testType, TestTypeDTO.class);
+					useCaseDTO.getApplicableTestTypes().add(testTypeDTO);
+					if (depth > 3) {
+						useCaseDTO.setEstimationDetails(new HashSet<>());
+						useCase.getEstimationDetails().stream().forEach(estimationDetail -> {
+							EstimationDetailDTO estimationDetailDTO = this.modelMapper.map(estimationDetail,
+									EstimationDetailDTO.class);
+							useCaseDTO.getEstimationDetails().add(estimationDetailDTO);
+						});
+					}
+				});
+			}
+			useCases.add(useCaseDTO);
+		});
+		return useCases;
 	}
 
 	/**
