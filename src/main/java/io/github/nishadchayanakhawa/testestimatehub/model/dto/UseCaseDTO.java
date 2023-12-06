@@ -52,4 +52,6 @@ public class UseCaseDTO {
 	
 	//applicable test types
 	private Set<TestTypeDTO> applicableTestTypes;
+	
+	private Set<EstimationDetailDTO> estimationDetails;
 }

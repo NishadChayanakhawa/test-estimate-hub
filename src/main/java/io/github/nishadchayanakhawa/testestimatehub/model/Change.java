@@ -93,8 +93,23 @@ public class Change {
 	@NotEmpty(message="impactedArea {non-empty.message}")
 	Set<ApplicationConfiguration> impactedArea = new HashSet<>();
 	
+	@OneToMany(mappedBy="change",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private Set<EstimationSummary> estimationSummaryRecords=new HashSet<>();
+	
+	private double designEfforts;
+	private double executionEfforts;
+	private double planningEfforts;
+	private double preparationEfforts;
+	private double managementEfforts;
+	private double totalEfforts;
+	
 	public void addRequirement(Requirement requirement) {
 		requirement.setChange(this);
 		this.requirements.add(requirement);
+	}
+	
+	public void addEstimationSummaryRecord(EstimationSummary estimationSummary) {
+		estimationSummary.setChange(this);
+		this.estimationSummaryRecords.add(estimationSummary);
 	}
 }

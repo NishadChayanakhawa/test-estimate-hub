@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 //constants, models and services
 import io.github.nishadchayanakhawa.testestimatehub.configurations.TestEstimateHubConstants;
 import io.github.nishadchayanakhawa.testestimatehub.model.dto.ChangeDTO;
+import io.github.nishadchayanakhawa.testestimatehub.model.dto.ChangeTypeDTO;
 import io.github.nishadchayanakhawa.testestimatehub.services.ChangeService;
 
 /**
@@ -117,5 +119,10 @@ public class ChangeManagementApi {
 		this.changeService.delete(changeToDelete.getId());
 		// return status code 200
 		return new ResponseEntity<>(HttpStatus.OK);
+	}
+	
+	@PostMapping(path = "/estimate", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	ResponseEntity<ChangeDTO> estimate(@RequestBody ChangeTypeDTO changeToEstimate) {
+		return new ResponseEntity<>(this.changeService.calculateEstimation(changeToEstimate.getId()),HttpStatus.OK);
 	}
 }

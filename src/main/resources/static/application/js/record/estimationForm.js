@@ -6,6 +6,11 @@ var estimationForm = (function() {
 
 	var previousUseCaseRecord = null;
 
+	var calculateEstimate = function(event) {
+		event.preventDefault();
+		logging.log("Calculating estimation");
+	};
+
 	var saveUseCases = function(event) {
 		event.preventDefault();
 		logging.log("Saving use cases");
@@ -100,7 +105,7 @@ var estimationForm = (function() {
 	var showUseCaseModal_success = function(requirement) {
 		logging.log(requirement);
 		$("#useCaseTableBody").html("");
-		$.each(requirement.useCases,function(i,useCase) {
+		$.each(requirement.useCases, function(i, useCase) {
 			logging.log("Use Case:" + i + useCase);
 			addUseCaseElement(useCase);
 		});
@@ -126,11 +131,16 @@ var estimationForm = (function() {
 			$("input[name='applicableTestTypes']").attr('checked', false);
 			$("#id").val("");
 		});
-		
+
 		$("#useCaseTableBody").on("click", "button[name='editUseCaseButton']", showEditUserModal);
 		$("#useCaseTableBody").on("click", "button[name='deleteUseCaseButton']", function() {
 			$(this).parent().parent().remove();
 		});
+
+		$("#estimate").click(function() {
+			console.log("a");
+		});
+
 		$("#saveUseCasesButton").click(saveUseCases);
 
 		logging.log("Estimation form initialized!!!");

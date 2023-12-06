@@ -49,8 +49,8 @@ public class ChangeTypeConfigurationApi {
 	 * <b>Description</b>: Saves Test type configuration record<br>
 	 * 
 	 * @param changeTypeToSave test type record to save as
-	 *                       {@link io.github.nishadchayanakhawa.testestimatehub.model.dto.ChangeTypeDTO
-	 *                       ChangeTypeDTO}
+	 *                         {@link io.github.nishadchayanakhawa.testestimatehub.model.dto.ChangeTypeDTO
+	 *                         ChangeTypeDTO}
 	 * @return saved test type record as
 	 *         {@link io.github.nishadchayanakhawa.testestimatehub.model.dto.ChangeTypeDTO
 	 *         ChangeTypeDTO}. If record was added, status is 201, and for update,
@@ -104,8 +104,8 @@ public class ChangeTypeConfigurationApi {
 	 * <b>Description</b>: Delete test type record.<br>
 	 * 
 	 * @param changeTypeToDelete test type record to delete as
-	 *                         {@link io.github.nishadchayanakhawa.testestimatehub.model.dto.ChangeTypeDTO
-	 *                         ChangeTypeDTO} only id property is required
+	 *                           {@link io.github.nishadchayanakhawa.testestimatehub.model.dto.ChangeTypeDTO
+	 *                           ChangeTypeDTO} only id property is required
 	 * @return status 200 once record is deleted
 	 */
 	@DeleteMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -117,4 +117,6 @@ public class ChangeTypeConfigurationApi {
 		// return status code 200
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
+
+	
 }

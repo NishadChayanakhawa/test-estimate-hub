@@ -3,6 +3,8 @@ package io.github.nishadchayanakhawa.testestimatehub.model;
 //java utils
 import java.util.Set;
 import java.util.HashSet;
+
+import jakarta.persistence.CascadeType;
 //jpa
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,6 +17,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 //jpa validations
 import jakarta.validation.constraints.Min;
@@ -90,4 +93,12 @@ public class UseCase {
 	@JoinTable(name = "TEH_USE_CASE_APPLICABLE_TEST_TYPE", joinColumns = {
 			@JoinColumn(name = "USE_CASE_ID") }, inverseJoinColumns = @JoinColumn(name = "TEST_TYPE_ID"))
 	private Set<TestType> applicableTestTypes = new HashSet<>();
+	
+	@OneToMany(mappedBy="useCase",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private Set<EstimationDetail> estimationDetails=new HashSet<>();
+	
+	public void addEstimationDetail(EstimationDetail estimationDetail) {
+		estimationDetail.setUseCase(this);
+		this.estimationDetails.add(estimationDetail);
+	}
 }
