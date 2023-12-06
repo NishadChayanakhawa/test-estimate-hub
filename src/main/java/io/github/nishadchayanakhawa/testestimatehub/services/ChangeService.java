@@ -297,11 +297,9 @@ public class ChangeService {
 						* (testType.getRelativeTestCaseCountPercentage() / 100))
 						* changeType.getTestCaseCountModifier());
 	}
-	
-	private Long getEstimationID(Map<String, Long> existingEstimationMap,String testTypeName) {
-		return existingEstimationMap.containsKey(testTypeName)
-				? existingEstimationMap.get(testTypeName)
-				: null;
+
+	private Long getEstimationID(Map<String, Long> existingEstimationMap, String testTypeName) {
+		return existingEstimationMap.containsKey(testTypeName) ? existingEstimationMap.get(testTypeName) : null;
 	}
 
 	/**
@@ -322,80 +320,75 @@ public class ChangeService {
 		logger.warn("Existing summary records: {}", existingEstimationSummaryByTestTypeNameMap);
 		Set<Long> updatedEstimationSummaryRecords = new HashSet<>();
 
-		change.getRequirements().stream().forEach(requirement -> {
-			requirement.getUseCases().forEach(useCase -> {
-				Map<String, Long> estimationByTestTypeNameMap = new HashMap<>();
-				useCase.getEstimationDetails().stream().forEach(estimation -> estimationByTestTypeNameMap
-						.put(estimation.getTestType().getName(), estimation.getId()));
+		change.getRequirements().stream().forEach(requirement -> requirement.getUseCases().forEach(useCase -> {
+			Map<String, Long> estimationByTestTypeNameMap = new HashMap<>();
+			useCase.getEstimationDetails().stream().forEach(estimation -> estimationByTestTypeNameMap
+					.put(estimation.getTestType().getName(), estimation.getId()));
 
-				Set<EstimationDetail> estimationDetailRecords = new HashSet<>();
-				Set<Long> updatedEstimationDetails = new HashSet<>();
-				GeneralConfigurationDTO generalConfiguration = generalConfigurationService.get();
+			Set<EstimationDetail> estimationDetailRecords = new HashSet<>();
+			Set<Long> updatedEstimationDetails = new HashSet<>();
+			GeneralConfigurationDTO generalConfiguration = generalConfigurationService.get();
 
-				useCase.getApplicableTestTypes().stream().forEach(testType -> {
-					EstimationDetail estimationDetail = new EstimationDetail();
-					estimationDetail.setTestType(testType);
-					estimationDetail.setId(this.getEstimationID(estimationByTestTypeNameMap, testType.getName()));
+			useCase.getApplicableTestTypes().stream().forEach(testType -> {
+				EstimationDetail estimationDetail = new EstimationDetail();
+				estimationDetail.setTestType(testType);
+				estimationDetail.setId(this.getEstimationID(estimationByTestTypeNameMap, testType.getName()));
 
-					estimationDetail.setTestCaseCount(
-							ChangeService.calulateTestCaseCount(useCase, testType, change.getChangeType()));
-					estimationDetail.setReExecutionCount((int) Math
-							.round((estimationDetail.getTestCaseCount() * testType.getReExecutionPercentage()) / 100));
-					estimationDetail.setAdditionalCycleExecutionCount((int) Math.round(
-							(estimationDetail.getTestCaseCount() * testType.getAdditionalCycleExecutionPercentage())
-									/ 100));
-					estimationDetail.setTotalExecutionCount(
-							estimationDetail.getTestCaseCount() + estimationDetail.getReExecutionCount()
-									+ estimationDetail.getAdditionalCycleExecutionCount());
+				estimationDetail.setTestCaseCount(
+						ChangeService.calulateTestCaseCount(useCase, testType, change.getChangeType()));
+				estimationDetail.setReExecutionCount((int) Math
+						.round((estimationDetail.getTestCaseCount() * testType.getReExecutionPercentage()) / 100));
+				estimationDetail.setAdditionalCycleExecutionCount((int) Math
+						.round((estimationDetail.getTestCaseCount() * testType.getAdditionalCycleExecutionPercentage())
+								/ 100));
+				estimationDetail.setTotalExecutionCount(estimationDetail.getTestCaseCount()
+						+ estimationDetail.getReExecutionCount() + estimationDetail.getAdditionalCycleExecutionCount());
 
-					Complexity effectiveComplexity = ChangeService.calculateEffectiveComplexity(useCase,
-							generalConfiguration);
+				Complexity effectiveComplexity = ChangeService.calculateEffectiveComplexity(useCase,
+						generalConfiguration);
 
-					estimationDetail.setDesignEfforts(ChangeService.round((estimationDetail.getTestCaseCount()
-							/ generalConfiguration.getTestDesignProductivity().get(effectiveComplexity))
-							* ChangeService.WORKING_HOURS));
+				estimationDetail.setDesignEfforts(ChangeService.round((estimationDetail.getTestCaseCount()
+						/ generalConfiguration.getTestDesignProductivity().get(effectiveComplexity))
+						* ChangeService.WORKING_HOURS));
 
-					estimationDetail.setExecutionEfforts(ChangeService.round((estimationDetail.getTotalExecutionCount()
-							/ generalConfiguration.getTestExecutionProductivity().get(effectiveComplexity))
-							* ChangeService.WORKING_HOURS));
+				estimationDetail.setExecutionEfforts(ChangeService.round((estimationDetail.getTotalExecutionCount()
+						/ generalConfiguration.getTestExecutionProductivity().get(effectiveComplexity))
+						* ChangeService.WORKING_HOURS));
 
-					estimationDetail.setTotalEfforts(ChangeService
-							.round(estimationDetail.getDesignEfforts() + estimationDetail.getExecutionEfforts()));
+				estimationDetail.setTotalEfforts(ChangeService
+						.round(estimationDetail.getDesignEfforts() + estimationDetail.getExecutionEfforts()));
 
-					estimationDetailRecords.add(estimationDetail);
-					updatedEstimationDetails.add(estimationDetail.getId());
+				estimationDetailRecords.add(estimationDetail);
+				updatedEstimationDetails.add(estimationDetail.getId());
 
-					logger.warn("Generating summary for test type {}", testType.getName());
-					if (!estimationSummaryByTestTypeNameMap.containsKey(testType.getName())) {
-						logger.warn("Record not found creating new");
-						EstimationSummary estimationSummary = new EstimationSummary();
-						estimationSummary
-								.setId(existingEstimationSummaryByTestTypeNameMap.containsKey(testType.getName())
-										? existingEstimationSummaryByTestTypeNameMap.get(testType.getName())
-										: null);
-						logger.warn("id set to {}", estimationSummary.getId());
-						estimationSummary.setTestType(testType);
-						estimationSummaryByTestTypeNameMap.put(testType.getName(), estimationSummary);
-					}
-					estimationSummaryByTestTypeNameMap.get(testType.getName()).addEstimationDetail(estimationDetail);
-					updatedEstimationSummaryRecords
-							.add(estimationSummaryByTestTypeNameMap.get(testType.getName()).getId());
-					logger.warn("Updated summary records set {}", updatedEstimationSummaryRecords);
-				});
-
-				useCase.getEstimationDetails().stream().forEach(estimation -> {
-					if (!updatedEstimationDetails.contains(estimation.getId())) {
-						this.estimationDetailRepository.deleteById(estimation.getId());
-					}
-				});
-
-				useCase.setEstimationDetails(new HashSet<>());
-				estimationDetailRecords.stream().forEach(estimation -> useCase.addEstimationDetail(estimation));
-
-				this.useCaseRepository.saveAndFlush(useCase);
-
+				logger.warn("Generating summary for test type {}", testType.getName());
+				if (!estimationSummaryByTestTypeNameMap.containsKey(testType.getName())) {
+					logger.warn("Record not found creating new");
+					EstimationSummary estimationSummary = new EstimationSummary();
+					estimationSummary.setId(existingEstimationSummaryByTestTypeNameMap.containsKey(testType.getName())
+							? existingEstimationSummaryByTestTypeNameMap.get(testType.getName())
+							: null);
+					logger.warn("id set to {}", estimationSummary.getId());
+					estimationSummary.setTestType(testType);
+					estimationSummaryByTestTypeNameMap.put(testType.getName(), estimationSummary);
+				}
+				estimationSummaryByTestTypeNameMap.get(testType.getName()).addEstimationDetail(estimationDetail);
+				updatedEstimationSummaryRecords.add(estimationSummaryByTestTypeNameMap.get(testType.getName()).getId());
+				logger.warn("Updated summary records set {}", updatedEstimationSummaryRecords);
 			});
-		});
+
+			useCase.getEstimationDetails().stream().forEach(estimation -> {
+				if (!updatedEstimationDetails.contains(estimation.getId())) {
+					this.estimationDetailRepository.deleteById(estimation.getId());
+				}
+			});
+
+			useCase.setEstimationDetails(new HashSet<>());
+			estimationDetailRecords.stream().forEach(estimation -> useCase.addEstimationDetail(estimation));
+
+			this.useCaseRepository.saveAndFlush(useCase);
+
+		}));
 
 		change.getEstimationSummaryRecords().stream().forEach(estimationSummary -> {
 			if (!updatedEstimationSummaryRecords.contains(estimationSummary.getId())) {
@@ -407,8 +400,7 @@ public class ChangeService {
 
 		change.setEstimationSummaryRecords(new HashSet<>());
 		logger.warn("Final summary records: {}", estimationSummaryByTestTypeNameMap);
-		estimationSummaryByTestTypeNameMap.values().stream()
-				.forEach(estimationSummaryRecord -> change.addEstimationSummaryRecord(estimationSummaryRecord));
+		estimationSummaryByTestTypeNameMap.values().stream().forEach(change::addEstimationSummaryRecord);
 
 		change.setDesignEfforts(ChangeService.round(
 				change.getEstimationSummaryRecords().stream().mapToDouble(EstimationSummary::getDesignEfforts).sum()));
