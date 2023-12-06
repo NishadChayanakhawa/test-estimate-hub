@@ -297,6 +297,12 @@ public class ChangeService {
 						* (testType.getRelativeTestCaseCountPercentage() / 100))
 						* changeType.getTestCaseCountModifier());
 	}
+	
+	private Long getEstimationID(Map<String, Long> existingEstimationMap,String testTypeName) {
+		return existingEstimationMap.containsKey(testTypeName)
+				? existingEstimationMap.get(testTypeName)
+				: null;
+	}
 
 	/**
 	 * Calculate estimation.
@@ -329,9 +335,7 @@ public class ChangeService {
 				useCase.getApplicableTestTypes().stream().forEach(testType -> {
 					EstimationDetail estimationDetail = new EstimationDetail();
 					estimationDetail.setTestType(testType);
-					estimationDetail.setId(estimationByTestTypeNameMap.containsKey(testType.getName())
-							? estimationByTestTypeNameMap.get(testType.getName())
-							: null);
+					estimationDetail.setId(this.getEstimationID(estimationByTestTypeNameMap, testType.getName()));
 
 					estimationDetail.setTestCaseCount(
 							ChangeService.calulateTestCaseCount(useCase, testType, change.getChangeType()));
