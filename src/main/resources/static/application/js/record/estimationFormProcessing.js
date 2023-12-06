@@ -42,6 +42,7 @@ var estimationFormProcessing = (function() {
 		var calculateEstimationRequest={
 			"id" : $("#changeId").val()
 		};
+		$("#calculateEstimatesButton").indicateButtonProcessing();
 		apiHandling.processRequest("post", "/api/change/estimate", csrfToken,calculateEstimationRequest)
 			.done(data => calculateEstimate_success(data))
 			.catch(error => calculateEstimate_failure(error));
@@ -61,11 +62,13 @@ var estimationFormProcessing = (function() {
 		logging.log(change.requirements);
 		$("#accordionEstimationSummary").html("");
 		$("#estimateDetailsTemplate").tmpl(change.requirements).appendTo("#accordionEstimationSummary");
+		$("#calculateEstimatesButton").indicateButtonProcessingCompleted();
 		$("#estimationReviewModal").modal('show');
 	};
 	
 	var calculateEstimate_failure=function(error) {
 		logging.log(error);
+		$("#calculateEstimatesButton").indicateButtonProcessingCompleted();
 	};
 	
 	/**
