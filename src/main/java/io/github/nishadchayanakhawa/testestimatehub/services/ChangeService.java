@@ -583,13 +583,6 @@ public class ChangeService {
 
 		// save change along with collection of estimation summary
 		this.changeRepository.saveAndFlush(change);
-		
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 
 		// return change record with depth=4, to include estimation detail and summary
 		return this.get(id, 4);
