@@ -42,6 +42,7 @@ import io.github.nishadchayanakhawa.testestimatehub.model.Change;
 import io.github.nishadchayanakhawa.testestimatehub.model.ChangeType;
 import io.github.nishadchayanakhawa.testestimatehub.model.Complexity;
 import io.github.nishadchayanakhawa.testestimatehub.model.Requirement;
+import io.github.nishadchayanakhawa.testestimatehub.model.Status;
 import io.github.nishadchayanakhawa.testestimatehub.model.TestType;
 import io.github.nishadchayanakhawa.testestimatehub.model.UseCase;
 import io.github.nishadchayanakhawa.testestimatehub.model.EstimationDetail;
@@ -162,6 +163,7 @@ public class ChangeService {
 
 				changeToSave.addRequirement(requirementToSave);
 			});
+			changeToSave.setStatus(Status.PENDING_ESTIMATION);
 			ChangeDTO savedChangeDTO = modelMapper.map(this.changeRepository.saveAndFlush(changeToSave),
 					ChangeDTO.class);
 			logger.debug("Saved change : {}", savedChangeDTO);
@@ -203,6 +205,11 @@ public class ChangeService {
 		return changes;
 	}
 
+	private Change get(Long id) {
+		Change change = this.changeRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Change", id));
+		return change;
+	}
+
 	/**
 	 * <b>Method Name</b>: get<br>
 	 * <b>Description</b>: Retreive change record based on id.<br>
@@ -216,7 +223,7 @@ public class ChangeService {
 	public ChangeDTO get(Long id, int depth) {
 		// retreive change based on id
 		logger.debug("Retreiving change for id {}", id);
-		Change change = this.changeRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Change", id));
+		Change change = this.get(id);
 		logger.debug("Change debug {}", change);
 		ChangeDTO changeDTO = modelMapper.map(change, ChangeDTO.class);
 		// if requested depth is >0,
@@ -416,7 +423,7 @@ public class ChangeService {
 	 */
 	public ChangeDTO calculateEstimation(Long id) {
 		// get change record
-		Change change = this.changeRepository.findById(id).get();
+		Change change = this.get(id);
 
 		// create map of test type -> existing estimation summary record id
 		Map<String, Long> existingEstimationSummaryByTestTypeNameMap = new HashMap<>();
@@ -581,11 +588,54 @@ public class ChangeService {
 		change.setTotalEfforts(ChangeService.round(totalEfforts + change.getPlanningEfforts()
 				+ change.getPreparationEfforts() + change.getPlanningEfforts()));
 
+		change.setStatus(Status.PENDING_ESTIMATION);
+
 		// save change along with collection of estimation summary
 		this.changeRepository.saveAndFlush(change);
 
 		// return change record with depth=4, to include estimation detail and summary
 		return this.get(id, 4);
+	}
+
+	public void submitEstimationsForReview(Long id) {
+		// get change record
+		Change change = this.get(id);
+		// if change record isn't estimated,
+		if (change.getTotalEfforts()==0d) {
+			// throw exception
+			throw new TransactionException(
+					"Please calculate estimates before submitting for review");
+		}
+		// else, change status to Pending Estimation Review
+		change.setStatus(Status.PENDING_ESTIMATION_REVIEW);
+		// save record
+		this.changeRepository.saveAndFlush(change);
+	}
+
+	public void approveEstimations(Long id) {
+		// get change record
+		Change change = this.get(id);
+		// if status is not pending for review,
+		if (change.getStatus() != Status.PENDING_ESTIMATION_REVIEW) {
+			// throw exception
+			throw new TransactionException(
+					String.format("Current status is '%s'.Please submit estimations for review first.",
+							change.getStatus().getDisplayValue()));
+		}
+		// else change status to pending resource allocation
+		change.setStatus(Status.PENDING_RESOURCE_ALLOCATION);
+		// save record
+		this.changeRepository.saveAndFlush(change);
+	}
+	
+	public boolean areEstimatesReadyForReview(Long id) {
+		Change change=this.get(id);
+		return (change.getStatus()==Status.PENDING_ESTIMATION && change.getTotalEfforts()>0);
+	}
+	
+	public boolean canEstimatesBeApproved(Long id) {
+		Change change=this.get(id);
+		return (change.getStatus()==Status.PENDING_ESTIMATION_REVIEW);
 	}
 
 	/**

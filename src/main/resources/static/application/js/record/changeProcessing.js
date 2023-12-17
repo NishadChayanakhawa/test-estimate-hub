@@ -26,83 +26,147 @@ var changeProcessing = (function() {
 			"confirmDelete": "button#confirmDeleteOperation",
 			"save": "button#saveRecord",
 			"edit": "button[id^='editRecordButton_']",
-			"delete": "button[id^='deleteRecordButton_']"
+			"delete": "button[id^='deleteRecordButton_']",
+			"review" : "button[id^='reviewEstimates_']",
+			"approve" : "button#approveEstimatesButton"
 		},
 		"forms": {
 			"put": "form#putRecordForm",
-			"delete" : "form#deleteRecordForm"
+			"delete": "form#deleteRecordForm"
 		},
-		"elements" : {
-			"deleteRecordId" : "input#deleteRecordId",
+		"elements": {
+			"deleteRecordId": "input#deleteRecordId",
 			"deleteRecordIdentifierDisplay": "span#deleteRecordIdentifierDisplay"
 		}
 	};
 	
+	var approveEstimates=function(event) {
+		event.preventDefault();
+		logging.log("Approving estimates!!!");
+		$(this).indicateButtonProcessing();
+		var approveEstimatesBody={
+			'id' : $("#changeToApprove").val()
+		};
+		logging.log(approveEstimatesBody);
+		apiHandling.processRequest("post", "/api/change/approveEstimations", csrfToken,approveEstimatesBody)
+			.done(data => approveEstimates_success(data,$(this)))
+			.catch(error => approveEstimates_failure(error,$(this)));
+	};
+	
+	var approveEstimates_success=function(data,approveEstimatesButton) {
+		logging.log(data);
+		approveEstimatesButton.indicateButtonProcessingCompleted();
+		$("#estimationReviewModal").modal('hide');
+		toastr.success("Estimates approved.");
+		loadRecords();
+	};
+	
+	var approveEstimates_failure=function(error,approveEstimatesButton) {
+		logging.log(error);
+		processUnexpectedError(error);
+		approveEstimatesButton.indicateButtonProcessingCompleted();
+	};
+
+	var viewEstimates = function(event) {
+		event.preventDefault();
+		$(this).indicateButtonProcessing();
+		logging.log("Viewing estimates!!!");
+		$("#viewEstimatesButton").indicateButtonProcessing();
+		apiHandling.processRequest("get", "/api/change/" + $(this).attr('id').split('_')[1] + "?depth=4", csrfToken)
+			.done(data => viewEstimates_success(data,$(this)))
+			.catch(error => viewEstimates_failure(error,$(this)));
+	};
+
+	var viewEstimates_success = function(change,viewEstimatesButton) {
+		$("#viewEstimatesButton").indicateButtonProcessingCompleted();
+		$("#changeEstimateBody").html("");
+		$("#estimateTemplate").tmpl(change.estimationSummaryRecords).appendTo("#changeEstimateBody");
+		$("td#designEfforts").html(change.designEfforts);
+		$("td#executionEfforts").html(change.executionEfforts);
+		$("td#planningEfforts").html(change.planningEfforts);
+		$("td#preparationEfforts").html(change.preparationEfforts);
+		$("td#managementEfforts").html(change.managementEfforts);
+		$("th#totalEfforts").html(change.totalEfforts);
+		$("#reviseEstimates").prop('href','/estimationForm/' + change.id);
+		$("#changeToApprove").val(change.id);
+		logging.log(change.requirements);
+		$("#accordionEstimationSummary").html("");
+		$("#estimateDetailsTemplate").tmpl(change.requirements).appendTo("#accordionEstimationSummary");
+		viewEstimatesButton.indicateButtonProcessingCompleted();
+		$("#estimationReviewModal").modal('show');
+	};
+
+	var viewEstimates_failure = function(error,viewEstimatesButton) {
+		logging.log(error);
+		$("#viewEstimatesButton").indicateButtonProcessingCompleted();
+		viewEstimatesButton.indicateButtonProcessingCompleted();
+	};
+
 	/**
 	 * Add/remove requirement form
 	 */
-	
-	var addRequirementForm=function(event) {
+
+	var addRequirementForm = function(event) {
 		event.preventDefault();
 		logging.log("Adding requirement form!!!");
-		requirementRecordId=requirementRecordId+1;
-		var requirementRecordAddFormRequest={
-			"id" : requirementRecordId
+		requirementRecordId = requirementRecordId + 1;
+		var requirementRecordAddFormRequest = {
+			"id": requirementRecordId
 		};
 		$("#requirementFormTemplate").tmpl(requirementRecordAddFormRequest).appendTo("#requirementFormsTableBody");
 	};
-	
-	var deleteRequirementForm=function(event) {
+
+	var deleteRequirementForm = function(event) {
 		event.preventDefault();
 		logging.log("Deleting requirement form!!!");
-		var requirementFormId=$(this).attr('id').split("_")[1];
+		var requirementFormId = $(this).attr('id').split("_")[1];
 		logging.log("Requirement id:" + requirementFormId);
 		$("tr#requirementForm_" + requirementFormId).remove();
 	};
-	
+
 	/**
 	 *******************Delete Record************************* 
 	 */
-	var showDeleteConfimationModal=function(event) {
+	var showDeleteConfimationModal = function(event) {
 		event.preventDefault();
 		logging.log("Showing delete modal");
-		var recordId=$(this).attr('id').split("_")[1];
+		var recordId = $(this).attr('id').split("_")[1];
 		logging.log("Record id: " + recordId);
 		$(xpaths.elements.deleteRecordId).val(recordId);
-		var recordIdentifier="";
+		var recordIdentifier = "";
 		$("td[id^='recordIdentifier_" + recordId + "_']").each(function() {
 			logging.log($(this).html());
-			if(recordIdentifier!="") {
-				recordIdentifier=recordIdentifier + " - ";				
+			if (recordIdentifier != "") {
+				recordIdentifier = recordIdentifier + " - ";
 			}
-			recordIdentifier=recordIdentifier + $(this).html();
+			recordIdentifier = recordIdentifier + $(this).html();
 		});
 		$(xpaths.elements.deleteRecordIdentifierDisplay).html(recordIdentifier);
 		$(xpaths.modals.delete).modal('show');
 	};
-	
-	var deleteRecord=function(event) {
+
+	var deleteRecord = function(event) {
 		event.preventDefault();
 		logging.log("Deleting record");
 		$(xpaths.buttons.confirmDelete).indicateButtonProcessing();
-		var deleteRequestBody=$(xpaths.forms.delete).serializeObject();
+		var deleteRequestBody = $(xpaths.forms.delete).serializeObject();
 		logging.log("Delete request: ")
 		logging.log(deleteRequestBody)
-		apiHandling.processRequest("delete", API_PATH, csrfToken,deleteRequestBody)
+		apiHandling.processRequest("delete", API_PATH, csrfToken, deleteRequestBody)
 			.done(data => deleteRecord_success(data))
 			.catch(error => deleteRecord_failure(error));
 	};
-	
-	var deleteRecord_success=function(data) {
+
+	var deleteRecord_success = function(data) {
 		logging.log(data);
-		var deletedRecordIdentifier=$(xpaths.elements.deleteRecordIdentifierDisplay).html();
+		var deletedRecordIdentifier = $(xpaths.elements.deleteRecordIdentifierDisplay).html();
 		$(xpaths.modals.delete).modal('hide');
 		toastr.success(RECORD_NAME + " '" + deletedRecordIdentifier + "' deleted successfully");
 		$(xpaths.buttons.confirmDelete).indicateButtonProcessingCompleted();
 		loadRecords();
 	};
-	
-	var deleteRecord_failure=function(data) {
+
+	var deleteRecord_failure = function(data) {
 		logging.log(data);
 		$(xpaths.buttons.confirmDelete).indicateButtonProcessingCompleted();
 		processUnexpectedError(error);
@@ -117,35 +181,35 @@ var changeProcessing = (function() {
 		logging.log("Showing edit modal");
 		//indicate that request in progress
 		$(this).indicateButtonProcessing();
-		var recordId=$(this).attr('id').split("_")[1];
+		var recordId = $(this).attr('id').split("_")[1];
 		logging.log("Record id: " + recordId);
 		apiHandling.processRequest("get", API_PATH + "/" + recordId + "?depth=1", csrfToken)
-			.done(data => showEditModal_success(data,$(this)))
-			.catch(error => showEditModal_failure(error,$(this)));
+			.done(data => showEditModal_success(data, $(this)))
+			.catch(error => showEditModal_failure(error, $(this)));
 	};
-	
-	var showEditModal_success=function(record,editButton) {
+
+	var showEditModal_success = function(record, editButton) {
 		logging.log(record);
 		editButton.indicateButtonProcessingCompleted();
-		teh.updateEditForm(xpaths.forms.put,record);
-		$.each(record.impactedArea,function(i,applicationConfiguration) {
+		teh.updateEditForm(xpaths.forms.put, record);
+		$.each(record.impactedArea, function(i, applicationConfiguration) {
 			logging.log("Impacted area: " + i + ":" + applicationConfiguration.id);
-			$("#impactedArea > option[value=" + applicationConfiguration.id + "]").attr("selected",'selected');
+			$("#impactedArea > option[value=" + applicationConfiguration.id + "]").attr("selected", 'selected');
 		});
-		$.each(record.requirements,function(i,requirement) {
+		$.each(record.requirements, function(i, requirement) {
 			logging.log("Requirement: " + i + ":" + requirement.id);
-			if(i>0) {
+			if (i > 0) {
 				$("#addRequirementButton").click();
 			}
-			$("#id_" + (i+1)).val(requirement.id);
-			$("#changeId_" + (i+1)).val(requirement.changeId);
-			$("#identifier_" + (i+1)).val(requirement.identifier);
-			$("#summary_" + (i+1)).val(requirement.summary);
+			$("#id_" + (i + 1)).val(requirement.id);
+			$("#changeId_" + (i + 1)).val(requirement.changeId);
+			$("#identifier_" + (i + 1)).val(requirement.identifier);
+			$("#summary_" + (i + 1)).val(requirement.summary);
 		});
 		$(xpaths.modals.put).modal('show');
 	};
-	
-	var showEditModal_failure=function(error,editButton) {
+
+	var showEditModal_failure = function(error, editButton) {
 		logging.log(error);
 		editButton.indicateButtonProcessingCompleted();
 		processUnexpectedError(error);
@@ -163,25 +227,25 @@ var changeProcessing = (function() {
 		//get save request body
 		var saveRequestBody = $(xpaths.forms.put).serializeObject();
 		//custom code
-		saveRequestBody.impactedArea=[];
-		$.each($("#impactedArea").val(),function(i,value) {
+		saveRequestBody.impactedArea = [];
+		$.each($("#impactedArea").val(), function(i, value) {
 			logging.log(i + ":" + value);
-			var impact={
-				"id" : value
+			var impact = {
+				"id": value
 			};
 			saveRequestBody.impactedArea.push(impact);
 		});
-		saveRequestBody.requirements=[];
+		saveRequestBody.requirements = [];
 		$("tr[id^='requirementForm_']").each(function() {
-			var requirement=$(this).serializeObject();
+			var requirement = $(this).serializeObject();
 			saveRequestBody.requirements.push(requirement);
 		});
-		
-		saveRequestBody.id=saveRequestBody.id[0];
-		saveRequestBody.identifier=saveRequestBody.identifier[0];
-		saveRequestBody.summary=saveRequestBody.summary[0];
-		
-		
+
+		saveRequestBody.id = saveRequestBody.id[0];
+		saveRequestBody.identifier = saveRequestBody.identifier[0];
+		saveRequestBody.summary = saveRequestBody.summary[0];
+
+
 		logging.log(saveRequestBody);
 		apiHandling.processRequest("put", API_PATH, csrfToken, saveRequestBody)
 			.done(data => saveRecord_success(data))
@@ -262,7 +326,7 @@ var changeProcessing = (function() {
 		//set toastr options
 		toastr.options = getToastrOptions();
 		//initialize requirement id to 1
-		requirementRecordId=1;
+		requirementRecordId = 1;
 
 		//bind save function to put record submission event
 		$(xpaths.forms.put).submit(saveRecord);
@@ -271,21 +335,24 @@ var changeProcessing = (function() {
 			teh.onModalDismiss(xpaths.forms.put);
 			$("#impactedArea > option").removeAttr("selected");
 			$("tr[id^='requirementForm_']:not(tr#requirementForm_1)").remove();
-			requirementRecordId=1;
+			requirementRecordId = 1;
 			$("#id_1").val('');
 			$("#changeId_1").val('');
 		});
 		//bind edit action
 		$(xpaths.record.table.body).on("click", xpaths.buttons.edit, showEditModal);
-		
+
 		//bind delete action
 		$(xpaths.record.table.body).on("click", xpaths.buttons.delete, showDeleteConfimationModal);
 		
+		$(xpaths.record.table.body).on("click", xpaths.buttons.review, viewEstimates);
+
 		//bind confirm delete action
 		$(xpaths.buttons.confirmDelete).click(deleteRecord);
-		
-		$("#requirementFormsTableBody").on('click',"button[id^='deleteRequirement_']",deleteRequirementForm)
-		
+		$(xpaths.buttons.approve).click(approveEstimates);
+
+		$("#requirementFormsTableBody").on('click', "button[id^='deleteRequirement_']", deleteRequirementForm)
+
 		$("#addRequirementButton").click(addRequirementForm);
 		logging.log(RECORD_NAME + " module initialized!!!");
 

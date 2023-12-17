@@ -5,7 +5,7 @@ var estimationFormProcessing = (function() {
 	const API_PATH = "/api/useCase";
 	//record name
 	const RECORD_NAME = "Use Case";
-	
+
 	//common xpaths
 	var xpaths = {
 		"record": {
@@ -28,27 +28,81 @@ var estimationFormProcessing = (function() {
 		},
 		"forms": {
 			"put": "form#putRecordForm",
-			"delete" : "form#deleteRecordForm"
+			"delete": "form#deleteRecordForm"
 		},
-		"elements" : {
-			"deleteRecordId" : "input#deleteRecordId",
+		"elements": {
+			"deleteRecordId": "input#deleteRecordId",
 			"deleteRecordIdentifierDisplay": "span#deleteRecordIdentifierDisplay"
 		}
 	};
 	
+	var viewEstimates=function(event) {
+		event.preventDefault();
+		logging.log("Viewing estimates!!!");
+		$("#viewEstimatesButton").indicateButtonProcessing();
+		apiHandling.processRequest("get", "/api/change/" + $("#changeId").val() + "?depth=4", csrfToken)
+			.done(data => viewEstimates_success(data))
+			.catch(error => viewEstimates_failure(error));
+	};
+	
+	var viewEstimates_success = function(change) {
+		$("#viewEstimatesButton").indicateButtonProcessingCompleted();
+		$("#changeEstimateBody").html("");
+		$("#estimateTemplate").tmpl(change.estimationSummaryRecords).appendTo("#changeEstimateBody");
+		$("td#designEfforts").html(change.designEfforts);
+		$("td#executionEfforts").html(change.executionEfforts);
+		$("td#planningEfforts").html(change.planningEfforts);
+		$("td#preparationEfforts").html(change.preparationEfforts);
+		$("td#managementEfforts").html(change.managementEfforts);
+		$("th#totalEfforts").html(change.totalEfforts);
+
+		logging.log(change.requirements);
+		$("#accordionEstimationSummary").html("");
+		$("#estimateDetailsTemplate").tmpl(change.requirements).appendTo("#accordionEstimationSummary");
+		$("#estimationReviewModal").modal('show');
+	};
+
+	var viewEstimates_failure = function(error) {
+		logging.log(error);
+		$("#viewEstimatesButton").indicateButtonProcessingCompleted();
+	};
+	
+	var submitEstimatesForReview=function(event) {
+		event.preventDefault();
+		logging.log("Submitting for review!!!");
+		var reviewEstimationRequest = {
+			"id": $("#changeId").val()
+		};
+		$("#submitForReviewButton").indicateButtonProcessing();
+		apiHandling.processRequest("post", "/api/change/submitEstimationsForReview", csrfToken, reviewEstimationRequest)
+			.done(data => submitEstimatesForReview_success(data))
+			.catch(error => submitEstimatesForReview_failure(error));
+	};
+	
+	var submitEstimatesForReview_success = function() {
+		$("#submitForReviewButton").indicateButtonProcessingCompleted();
+		toastr.success("Estimations submitted for review.");
+		$("#estimationReviewModal").modal('hide');
+	};
+
+	var submitEstimatesForReview_failure = function(error) {
+		logging.log(error);
+		$("#submitForReviewButton").indicateButtonProcessingCompleted();
+	};
+
 	var calculateEstimate = function(event) {
 		event.preventDefault();
 		logging.log("Calculating estimation");
-		var calculateEstimationRequest={
-			"id" : $("#changeId").val()
+		var calculateEstimationRequest = {
+			"id": $("#changeId").val()
 		};
 		$("#calculateEstimatesButton").indicateButtonProcessing();
-		apiHandling.processRequest("post", "/api/change/estimate", csrfToken,calculateEstimationRequest)
+		apiHandling.processRequest("post", "/api/change/estimate", csrfToken, calculateEstimationRequest)
 			.done(data => calculateEstimate_success(data))
 			.catch(error => calculateEstimate_failure(error));
 	};
-	
-	var calculateEstimate_success=function(change) {
+
+	var calculateEstimate_success = function(change) {
 		logging.log(change);
 		$("#changeEstimateBody").html("");
 		$("#estimateTemplate").tmpl(change.estimationSummaryRecords).appendTo("#changeEstimateBody");
@@ -58,71 +112,86 @@ var estimationFormProcessing = (function() {
 		$("td#preparationEfforts").html(change.preparationEfforts);
 		$("td#managementEfforts").html(change.managementEfforts);
 		$("th#totalEfforts").html(change.totalEfforts);
-		
+
 		logging.log(change.requirements);
 		$("#accordionEstimationSummary").html("");
 		$("#estimateDetailsTemplate").tmpl(change.requirements).appendTo("#accordionEstimationSummary");
+		
+		logging.log(change.estimationSummaryRecords == null);
+		logging.log(change.estimationSummaryRecords.length == 0);
+		logging.log((change.estimationSummaryRecords == null || change.estimationSummaryRecords.length == 0));
+		logging.log("disabling");
+		logging.log($("button#viewEstimatesButton"));
+
+		if((change.estimationSummaryRecords == null || change.estimationSummaryRecords.length == 0)) {
+			$("button#viewEstimatesButton").hide();	
+			$("button#submitForReviewButton").hide();
+		} else {
+			$("button#viewEstimatesButton").show();
+			$("button#submitForReviewButton").show();
+		}
+	
 		$("#calculateEstimatesButton").indicateButtonProcessingCompleted();
 		$("#estimationReviewModal").modal('show');
 	};
-	
-	var calculateEstimate_failure=function(error) {
+
+	var calculateEstimate_failure = function(error) {
 		logging.log(error);
 		$("#calculateEstimatesButton").indicateButtonProcessingCompleted();
 	};
-	
+
 	/**
 	 * 
 	 * 
 	 */
-	
-	
-	
-	var showDeleteConfimationModal=function(event) {
+
+
+
+	var showDeleteConfimationModal = function(event) {
 		event.preventDefault();
 		logging.log("Showing delete modal");
-		var recordId=$(this).attr('id').split("_")[1];
+		var recordId = $(this).attr('id').split("_")[1];
 		logging.log("Record id: " + recordId);
 		$(xpaths.elements.deleteRecordId).val(recordId);
-		var recordIdentifier="";
+		var recordIdentifier = "";
 		$("td[id^='recordIdentifier_" + recordId + "_']").each(function() {
 			logging.log($(this).html());
-			if(recordIdentifier!="") {
-				recordIdentifier=recordIdentifier + " - ";				
+			if (recordIdentifier != "") {
+				recordIdentifier = recordIdentifier + " - ";
 			}
-			recordIdentifier=recordIdentifier + $(this).html();
+			recordIdentifier = recordIdentifier + $(this).html();
 		});
 		$(xpaths.elements.deleteRecordIdentifierDisplay).html(recordIdentifier);
 		$(xpaths.modals.delete).modal('show');
 	};
-	
-	var deleteRecord=function(event) {
+
+	var deleteRecord = function(event) {
 		event.preventDefault();
 		logging.log("Deleting record");
 		$(xpaths.buttons.confirmDelete).indicateButtonProcessing();
-		var deleteRequestBody=$(xpaths.forms.delete).serializeObject();
+		var deleteRequestBody = $(xpaths.forms.delete).serializeObject();
 		logging.log("Delete request: ")
 		logging.log(deleteRequestBody)
-		apiHandling.processRequest("delete", API_PATH, csrfToken,deleteRequestBody)
+		apiHandling.processRequest("delete", API_PATH, csrfToken, deleteRequestBody)
 			.done(data => deleteRecord_success(data))
 			.catch(error => deleteRecord_failure(error));
 	};
-	
-	var deleteRecord_success=function(data) {
+
+	var deleteRecord_success = function(data) {
 		logging.log(data);
-		var deletedRecordIdentifier=$(xpaths.elements.deleteRecordIdentifierDisplay).html();
+		var deletedRecordIdentifier = $(xpaths.elements.deleteRecordIdentifierDisplay).html();
 		$(xpaths.modals.delete).modal('hide');
 		toastr.success(RECORD_NAME + " '" + deletedRecordIdentifier + "' deleted successfully");
 		$(xpaths.buttons.confirmDelete).indicateButtonProcessingCompleted();
 		loadUseCases();
 	};
-	
-	var deleteRecord_failure=function(data) {
+
+	var deleteRecord_failure = function(data) {
 		logging.log(data);
 		$(xpaths.buttons.confirmDelete).indicateButtonProcessingCompleted();
 		processUnexpectedError(error);
 	};
-	
+
 	/**
 	 *******************Edit Record***************************
 	 */
@@ -132,35 +201,35 @@ var estimationFormProcessing = (function() {
 		logging.log("Showing edit modal");
 		//indicate that request in progress
 		$(this).indicateButtonProcessing();
-		var recordId=$(this).attr('id').split("_")[1];
+		var recordId = $(this).attr('id').split("_")[1];
 		logging.log("Record id: " + recordId);
 		apiHandling.processRequest("get", API_PATH + "/" + recordId, csrfToken)
-			.done(data => showEditModal_success(data,$(this)))
-			.catch(error => showEditModal_failure(error,$(this)));
+			.done(data => showEditModal_success(data, $(this)))
+			.catch(error => showEditModal_failure(error, $(this)));
 	};
-	
-	var showEditModal_success=function(record,editButton) {
+
+	var showEditModal_success = function(record, editButton) {
 		logging.log(record);
 		editButton.indicateButtonProcessingCompleted();
-		teh.updateEditForm("#putRecordForm",record);
+		teh.updateEditForm("#putRecordForm", record);
 		$("select#businessFunctionalityId").val(record.businessFunctionalityId);
 		$("select#testConfigurationComplexityCode").val(record.testConfigurationComplexityCode);
 		$("select#testDataSetupComplexityCode").val(record.testDataSetupComplexityCode);
 		$("select#testTransactionComplexityCode").val(record.testTransactionComplexityCode);
 		$("select#testValidationComplexityCode").val(record.testValidationComplexityCode);
-		$.each(record.applicableTestTypes,function(i,testType) {
+		$.each(record.applicableTestTypes, function(i, testType) {
 			logging.log("Processing test type" + i);
-			$("input#applicableTestTypes" + testType.id).attr('checked',true);
+			$("input#applicableTestTypes" + testType.id).attr('checked', true);
 		});
 		$("#putRecordModal").modal('show');
 	};
-	
-	var showEditModal_failure=function(error,editButton) {
+
+	var showEditModal_failure = function(error, editButton) {
 		logging.log(error);
 		editButton.indicateButtonProcessingCompleted();
 		processUnexpectedError(error);
 	};
-	
+
 	/**
 	 * 
 	 */
@@ -184,7 +253,7 @@ var estimationFormProcessing = (function() {
 			toastr.error("Please select at least one test type");
 		} else {
 			$(this).indicateButtonProcessing();
-			
+
 			if ($.isArray(applicableTestTypes)) {
 				$.each(applicableTestTypes, function(i, testType) {
 					logging.log("Processing " + i + ":" + testType);
@@ -199,21 +268,21 @@ var estimationFormProcessing = (function() {
 			}
 			logging.log(applicableTestTypes);
 			apiHandling.processRequest("put", API_PATH, csrfToken, putUseCaseRequest)
-				.done(data => saveUseCase_success(data,$(this)))
-				.catch(error => saveUseCase_failure(error,$(this)));
+				.done(data => saveUseCase_success(data, $(this)))
+				.catch(error => saveUseCase_failure(error, $(this)));
 		}
 	};
 
-	var saveUseCase_success = function(useCase,putButton) {
+	var saveUseCase_success = function(useCase, putButton) {
 		logging.log(useCase);
-		putButton.indicateButtonProcessingCompleted();	
+		putButton.indicateButtonProcessingCompleted();
 		$("#putRecordModal").modal('hide');
 		//show success message
 		teh.showSaveSuccessMessage('Use Case', useCase.summary);
 		loadUseCases();
 	};
 
-	var saveUseCase_failure = function(error,putButton) {
+	var saveUseCase_failure = function(error, putButton) {
 		logging.log(error);
 		putButton.indicateButtonProcessingCompleted();
 		processUnexpectedError(error);
@@ -226,18 +295,18 @@ var estimationFormProcessing = (function() {
 			$("#accordianButton_" + requirementId).indicateButtonProcessing();
 
 			apiHandling.processRequest("get", API_PATH + "/byRequirement/" + requirementId, csrfToken)
-				.done(data => loadUseCase_success(data,requirementId))
-				.catch(error => loadUseCase_failure(error,requirementId));
+				.done(data => loadUseCase_success(data, requirementId))
+				.catch(error => loadUseCase_failure(error, requirementId));
 		});
 	};
 
-	var loadUseCase_success = function(useCases,requirementId) {
+	var loadUseCase_success = function(useCases, requirementId) {
 		logging.log(useCases);
 		$("#accordianButton_" + requirementId).indicateButtonProcessingCompleted();
 		populateDataTable(useCases, "table#recordTable_" + requirementId, "tbody#recordTableBody_" + requirementId, "#recordListTemplate");
 	};
 
-	var loadUseCase_failure = function(error,requirementId) {
+	var loadUseCase_failure = function(error, requirementId) {
 		logging.log(error);
 		$("#accordianButton_" + requirementId).indicateButtonProcessingCompleted();
 		processUnexpectedError(error);
@@ -256,18 +325,20 @@ var estimationFormProcessing = (function() {
 			logging.log('dismissed');
 			teh.onModalDismiss("#putRecordForm");
 			$("input[id^='applicableTestTypes'").each(function() {
-				$(this).attr('checked',false);
+				$(this).attr('checked', false);
 			});
 		});
-		$("tbody[id^='recordTableBody_']").on('click',"button[id^='editRecordButton_']",showEditModal);
+		$("tbody[id^='recordTableBody_']").on('click', "button[id^='editRecordButton_']", showEditModal);
 		//bind delete action
 		$("tbody[id^='recordTableBody_']").on("click", xpaths.buttons.delete, showDeleteConfimationModal);
-		
+
 		//bind confirm delete action
 		$(xpaths.buttons.confirmDelete).click(deleteRecord);
 		loadUseCases();
-		
+
 		$("#calculateEstimatesButton").click(calculateEstimate);
+		$("#submitForReviewButton").click(submitEstimatesForReview);
+		$("#viewEstimatesButton").click(viewEstimates);
 
 		logging.log("Estimation form processing page initialized!!!");
 	};

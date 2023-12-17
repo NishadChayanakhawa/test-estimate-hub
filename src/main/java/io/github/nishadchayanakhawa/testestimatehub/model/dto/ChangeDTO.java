@@ -36,6 +36,11 @@ public class ChangeDTO {
 	// change summary
 	private String summary;
 	// change type id
+	// status code
+	private String statusCode;
+	// status display value
+	private String statusDisplayValue;
+	// change type id
 	private Long changeTypeId;
 	// change type name
 	private String changeTypeName;
@@ -50,7 +55,7 @@ public class ChangeDTO {
 	// impacted areas
 	private Set<ApplicationConfigurationDTO> impactedArea;
 	private Set<EstimationSummaryDTO> estimationSummaryRecords;
-	
+
 	private double designEfforts;
 	private double executionEfforts;
 	private double planningEfforts;

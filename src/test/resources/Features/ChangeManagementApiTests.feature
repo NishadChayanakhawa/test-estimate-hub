@@ -134,11 +134,25 @@ Feature: Application configuration tests
 		When GET request is submitted to "http://localhost:8999/api/useCase/{{useCaseId}}"
 		Then Response status code should be 200
 		
+	Scenario: Submit estimations for approval before estimating
+		Given In request header, set "Content-Type" to "application/json"
+		And Request body template is loaded from file "deleteRecord.json"
+		And In request body template, replace "${id}" with value of variable "changeId"
+		When POST request is submitted to "http://localhost:8999/api/change/submitEstimationsForReview"
+		Then Response status code should be 400
+		
 	Scenario: Calculate estimates
 		Given In request header, set "Content-Type" to "application/json"
 		And Request body template is loaded from file "deleteRecord.json"
 		And In request body template, replace "${id}" with value of variable "changeId"
 		When POST request is submitted to "http://localhost:8999/api/change/estimate"
+		Then Response status code should be 200
+		
+	Scenario: Submit estimations for approval
+		Given In request header, set "Content-Type" to "application/json"
+		And Request body template is loaded from file "deleteRecord.json"
+		And In request body template, replace "${id}" with value of variable "changeId"
+		When POST request is submitted to "http://localhost:8999/api/change/submitEstimationsForReview"
 		Then Response status code should be 200
 		
 	Scenario: Get change with depth 4
@@ -156,6 +170,27 @@ Feature: Application configuration tests
 		And Request body template is loaded from file "deleteRecord.json"
 		And In request body template, replace "${id}" with value of variable "changeId"
 		When POST request is submitted to "http://localhost:8999/api/change/estimate"
+		Then Response status code should be 200
+		
+	Scenario: Approve estimates before they are sent for review
+		Given In request header, set "Content-Type" to "application/json"
+		And Request body template is loaded from file "deleteRecord.json"
+		And In request body template, replace "${id}" with value of variable "changeId"
+		When POST request is submitted to "http://localhost:8999/api/change/approveEstimations"
+		Then Response status code should be 400
+		
+	Scenario: Submit estimations for approval again
+		Given In request header, set "Content-Type" to "application/json"
+		And Request body template is loaded from file "deleteRecord.json"
+		And In request body template, replace "${id}" with value of variable "changeId"
+		When POST request is submitted to "http://localhost:8999/api/change/submitEstimationsForReview"
+		Then Response status code should be 200
+		
+	Scenario: Approve estimates
+		Given In request header, set "Content-Type" to "application/json"
+		And Request body template is loaded from file "deleteRecord.json"
+		And In request body template, replace "${id}" with value of variable "changeId"
+		When POST request is submitted to "http://localhost:8999/api/change/approveEstimations"
 		Then Response status code should be 200
 		
 	Scenario: Get change with depth 4 again
