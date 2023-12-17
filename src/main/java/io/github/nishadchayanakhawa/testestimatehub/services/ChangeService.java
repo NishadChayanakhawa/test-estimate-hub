@@ -626,16 +626,6 @@ public class ChangeService {
 		// save record
 		this.changeRepository.saveAndFlush(change);
 	}
-	
-	public boolean areEstimatesReadyForReview(Long id) {
-		Change change=this.get(id);
-		return (change.getStatus()==Status.PENDING_ESTIMATION && change.getTotalEfforts()>0);
-	}
-	
-	public boolean canEstimatesBeApproved(Long id) {
-		Change change=this.get(id);
-		return (change.getStatus()==Status.PENDING_ESTIMATION_REVIEW);
-	}
 
 	/**
 	 * <b>Method Name</b>: round<br>

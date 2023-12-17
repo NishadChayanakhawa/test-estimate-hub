@@ -138,20 +138,4 @@ public class ChangeManagementApi {
 		this.changeService.approveEstimations(changeToReviewEstimates.getId());
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
-	
-	@GetMapping(path="/areEstimatesReadyForReview/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
-	ResponseEntity<Boolean> areEstimatesReadyForReview(@PathVariable Long id) {
-		logger.debug(TestEstimateHubConstants.SERVING_GET_REQUEST_DEBUG_MESSAGE, "GET",
-				TestEstimateHubConstants.CHANGE_MANAGEMENT_API + "/areEstimatesReadyForReview/", id);
-		// return test type record
-		return new ResponseEntity<>(this.changeService.areEstimatesReadyForReview(id), HttpStatus.OK);
-	}
-	
-	@GetMapping(path="/canEstimatesBeApproved/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
-	ResponseEntity<Boolean> canEstimatesBeApproved(@PathVariable Long id) {
-		logger.debug(TestEstimateHubConstants.SERVING_GET_REQUEST_DEBUG_MESSAGE, "GET",
-				TestEstimateHubConstants.CHANGE_MANAGEMENT_API + "/canEstimatesBeApproved/", id);
-		// return test type record
-		return new ResponseEntity<>(this.changeService.canEstimatesBeApproved(id), HttpStatus.OK);
-	}
 }
