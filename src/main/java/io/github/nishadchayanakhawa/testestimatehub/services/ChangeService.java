@@ -206,8 +206,7 @@ public class ChangeService {
 	}
 
 	private Change get(Long id) {
-		Change change = this.changeRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Change", id));
-		return change;
+		return this.changeRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Change", id));
 	}
 
 	/**
