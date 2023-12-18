@@ -8,6 +8,8 @@ import java.time.LocalDate;
 import jakarta.persistence.Column;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -65,6 +67,12 @@ public class Change {
 	@NotBlank(message = "summary {required.message}")
 	private String summary;
 
+	//status
+	@Column(nullable = false)
+	@NotNull(message = "status is required")
+	@Enumerated(EnumType.ORDINAL)
+	private Status status;
+
 	// change type
 	@ManyToOne
 	@JoinColumn(name = "CHANGE_TYPE_ID", nullable = false)
@@ -82,32 +90,30 @@ public class Change {
 	private LocalDate endDate;
 
 	// requirements
-	@OneToMany(mappedBy="change",cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "change", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	Set<Requirement> requirements = new HashSet<>();
 
 	// impacted applications, modules and sub-modules
 	@ManyToMany(fetch = FetchType.LAZY)
-	@JoinTable(name = "TEH_CHANGE_IMPACT", 
-		joinColumns = @JoinColumn(name = "CHANGE_ID"), 
-		inverseJoinColumns = @JoinColumn(name = "APPLICATION_CONFIGURATION_ID"))
-	@NotEmpty(message="impactedArea {non-empty.message}")
+	@JoinTable(name = "TEH_CHANGE_IMPACT", joinColumns = @JoinColumn(name = "CHANGE_ID"), inverseJoinColumns = @JoinColumn(name = "APPLICATION_CONFIGURATION_ID"))
+	@NotEmpty(message = "impactedArea {non-empty.message}")
 	Set<ApplicationConfiguration> impactedArea = new HashSet<>();
-	
-	@OneToMany(mappedBy="change",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private Set<EstimationSummary> estimationSummaryRecords=new HashSet<>();
-	
+
+	@OneToMany(mappedBy = "change", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private Set<EstimationSummary> estimationSummaryRecords = new HashSet<>();
+
 	private double designEfforts;
 	private double executionEfforts;
 	private double planningEfforts;
 	private double preparationEfforts;
 	private double managementEfforts;
 	private double totalEfforts;
-	
+
 	public void addRequirement(Requirement requirement) {
 		requirement.setChange(this);
 		this.requirements.add(requirement);
 	}
-	
+
 	public void addEstimationSummaryRecord(EstimationSummary estimationSummary) {
 		estimationSummary.setChange(this);
 		this.estimationSummaryRecords.add(estimationSummary);

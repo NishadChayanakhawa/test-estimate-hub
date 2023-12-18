@@ -11,6 +11,65 @@
 			changeProcessing.init();
 		});
 	</script>
+	<script id="estimateTemplate" type="text/template">
+		<tr>
+			<th scope="row">${testTypeName}</th>
+			<td class="text-center">${testCaseCount}</td>
+			<td class="text-center">${reExecutionCount}</td>
+			<td class="text-center">${additionalCycleExecutionCount}</td>
+			<td class="text-center">${totalExecutionCount}</td>
+			<td class="text-center">${designEfforts}</td>
+			<td class="text-center">${executionEfforts}</td>
+			<td class="text-center">${totalEfforts}</td>
+		</tr>
+	</script>
+	<script id="estimateDetailsTemplate" type="text/template">
+		{%each(i,useCase) useCases%}                
+            <div class="accordion-item">
+				<h2 class="accordion-header">
+					<button id="estimationSummaryAccordianButton_${useCase.id}" class="accordion-button collapsed"
+						type="button" data-bs-toggle="collapse" data-bs-target="#collapse_${useCase.id}"
+						aria-expanded="true" aria-controls="collapse_${useCase.id}">
+						${identifier} - ${useCase.summary}
+					</button>
+				</h2>
+				<div id="collapse_${useCase.id}" class="accordion-collapse collapse bg-primary-subtle"
+					data-bs-parent="#accordionEstimationSummary">
+					<div class="accordion-body">
+						<table class="table table-striped table-borderless table-sm">
+							<caption>Estimation details</caption>
+							<thead>
+								<tr>
+									<th scope="col">Test Type</th>
+									<th scope="col" class=" text-center">Test Case Count</th>
+									<th scope="col" class=" text-center">Re-execution Count</th>
+									<th scope="col" class=" text-center">Additional Cycle Execution Count</th>
+									<th scope="col" class=" text-center">Total Executions</th>
+									<th scope="col" class=" text-center">Design Efforts</th>
+									<th scope="col" class=" text-center">Execution Efforts</th>
+									<th scope="col" class=" text-center">Total Efforts</th>
+								</tr>
+							</thead>
+							<tbody>
+								{%each(i,estimationDetailRecord) useCase.estimationDetails%}
+								<tr>
+									<th scope="row">${estimationDetailRecord.testTypeName}</th>
+									<td class="text-center">${estimationDetailRecord.testCaseCount}</td>
+									<td class="text-center">${estimationDetailRecord.reExecutionCount}</td>
+									<td class="text-center">${estimationDetailRecord.additionalCycleExecutionCount}</td>
+									<td class="text-center">${estimationDetailRecord.totalExecutionCount}</td>
+									<td class="text-center">${estimationDetailRecord.designEfforts}</td>
+									<td class="text-center">${estimationDetailRecord.executionEfforts}</td>
+									<td class="text-center">${estimationDetailRecord.totalEfforts}</td>
+								</tr>
+								{%/each%}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+        {%/each%}  
+	</script>
 	<script id="requirementFormTemplate" type="text/template">
 		<tr id="requirementForm_${id}">
 			<input type="hidden" class="form-control" id="id_${id}" name="id">
@@ -33,6 +92,11 @@
 			<td id="recordIdentifier_${id}_1">${identifier}</td>
 			<td>${changeTypeName}</td>
 			<td>${summary}</td>
+			{%if statusCode == 'PENDING_ESTIMATION'%}
+				<td><span class='badge text-bg-secondary'>${statusDisplayValue}</span></td>
+			{%else statusCode == "PENDING_ESTIMATION_REVIEW"%}
+				<td><span class='badge text-bg-warning'>${statusDisplayValue}</span></td>
+			{%/if%}
 			<td>
 				<button class="border-0 bg-transparent" id="editRecordButton_${id}">
 					<i class="fa fa-edit"></i> Edit
@@ -40,9 +104,15 @@
 				<button class="border-0 bg-transparent text-danger" id="deleteRecordButton_${id}">
 					<i class="fa fa-trash"></i> Delete
 				</button>
-				<a class="link-offset-2 link-underline link-underline-opacity-0 text-primary-emphasis" th:href="@{/estimationForm/} + '${id}'">
-					<i class="fa-solid fa-scale-balanced"></i> Estimate
-				</a>
+				{%if statusCode == 'PENDING_ESTIMATION'%}
+					<a class="link-offset-2 link-underline link-underline-opacity-0 text-primary-emphasis" th:href="@{/estimationForm/} + '${id}'">
+						<i class="fa-solid fa-scale-balanced"></i> Estimate
+					</a>
+				{%elseif statusCode == "PENDING_ESTIMATION_REVIEW"%}
+					<button class="border-0 bg-transparent text-warning-emphasis" id="reviewEstimates_${id}">
+						<i class="fa-solid fa-magnifying-glass"></i> Review Estimates
+					</button>
+				{%/if%}
 			</td>
 		</tr>
 	</script>
@@ -105,6 +175,101 @@
 						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 						<button id="confirmDeleteOperation" type="submit" class="btn btn-danger">Confirm Delete</button>
 					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade" id="estimationReviewModal" tabindex="-1" aria-labelledby="estimationReviewModalLabel"
+		aria-hidden="true">
+		<div class="modal-dialog modal-fullscreen">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 class="modal-title fs-5" id="estimationReviewModalLabel">Review Estimates</h1>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<ul class="nav nav-underline mb-2 justify-content-end">
+						<li class="nav-item">
+							<a class="nav-link active" id="summary-tab" data-bs-toggle="tab"
+								data-bs-target="#summary-tab-pane" type="button" role="tab"
+								aria-controls="summary-tab-pane" aria-selected="true">Summary</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" id="detail-tab" data-bs-toggle="tab" data-bs-target="#detail-tab-pane"
+								type="button" role="tab" aria-controls="detail-tab-pane"
+								aria-selected="false">Details</a>
+						</li>
+					</ul>
+					<div class="tab-content" id="estimationTabContent">
+						<div class="tab-pane fade show active" id="summary-tab-pane" role="tabpanel"
+							aria-labelledby="summary-tab" tabindex="0">
+							<table id="changeEstimate" class="table table-striped table-borderless table-sm">
+								<caption>Estimation summary</caption>
+								<thead>
+									<tr>
+										<th scope="col">Test Type</th>
+										<th scope="col" class=" text-center">Test Case Count</th>
+										<th scope="col" class=" text-center">Re-execution Count</th>
+										<th scope="col" class=" text-center">Additional Cycle Execution Count</th>
+										<th scope="col" class=" text-center">Total Executions</th>
+										<th scope="col" class=" text-center">Design Efforts</th>
+										<th scope="col" class=" text-center">Execution Efforts</th>
+										<th scope="col" class=" text-center">Total Efforts</th>
+									</tr>
+								</thead>
+								<tbody id="changeEstimateBody">
+									<tr>
+										<th scope="row">SIT</th>
+										<td class="text-center">25</td>
+										<td class="text-center">25</td>
+										<td class="text-center">25</td>
+										<td class="text-center">25</td>
+									</tr>
+								</tbody>
+							</table>
+							<table class="table table-sm">
+								<caption>Estimation</caption>
+								<tr>
+									<th scope="row">Design Efforts</th>
+									<td id="designEfforts">50</td>
+								</tr>
+								<tr>
+									<th scope="row">Execution Efforts</th>
+									<td id="executionEfforts">50</td>
+								</tr>
+								<tr>
+									<th scope="row">Planning Efforts</th>
+									<td id="planningEfforts">50</td>
+								</tr>
+								<tr>
+									<th scope="row">Preparation Efforts</th>
+									<td id="preparationEfforts">50</td>
+								</tr>
+								<tr>
+									<th scope="row">Management Efforts</th>
+									<td id="managementEfforts">50</td>
+								</tr>
+								<tr class="table-success">
+									<th scope="row">Total Efforts</th>
+									<th scope="row" id="totalEfforts">50</th>
+								</tr>
+							</table>
+						</div>
+						<div class="tab-pane fade" id="detail-tab-pane" role="tabpanel" aria-labelledby="detail-tab"
+							tabindex="0">
+							<div class="accordion mt-2" id="accordionEstimationSummary">
+							</div>
+						</div>
+					</div>
+					<hr>
+					<input id="changeToApprove" type="hidden" />
+					<a id="reviseEstimates" class="link-offset-2 link-underline link-underline-opacity-0 btn btn-danger mt-2 ms-2" href="???">
+						Revise
+					</a>
+					<button class="btn btn-success mt-2 ms-2" id="approveEstimatesButton">
+						Approve Estimates
+					</button>
 				</div>
 			</div>
 		</div>
@@ -235,6 +400,7 @@
 					<th>Change</th>
 					<th>Change Type</th>
 					<th>Summary</th>
+					<th>Status</th>
 					<th>Actions</th>
 				</tr>
 			</thead>

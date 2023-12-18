@@ -52,8 +52,8 @@ public class ChangeManagementApi {
 	 * <b>Description</b>: Saves Test type configuration record<br>
 	 * 
 	 * @param changeToSave test type record to save as
-	 *                       {@link io.github.nishadchayanakhawa.testestimatehub.model.dto.ChangeDTO
-	 *                       ChangeDTO}
+	 *                     {@link io.github.nishadchayanakhawa.testestimatehub.model.dto.ChangeDTO
+	 *                     ChangeDTO}
 	 * @return saved test type record as
 	 *         {@link io.github.nishadchayanakhawa.testestimatehub.model.dto.ChangeDTO
 	 *         ChangeDTO}. If record was added, status is 201, and for update,
@@ -79,11 +79,12 @@ public class ChangeManagementApi {
 	 *         ChangeDTO}
 	 */
 	@GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	ResponseEntity<ChangeDTO> getChange(@PathVariable Long id,@RequestParam(name="depth",defaultValue="0") int depth) {
+	ResponseEntity<ChangeDTO> getChange(@PathVariable Long id,
+			@RequestParam(name = "depth", defaultValue = "0") int depth) {
 		logger.debug(TestEstimateHubConstants.SERVING_GET_REQUEST_DEBUG_MESSAGE, "GET",
 				TestEstimateHubConstants.CHANGE_MANAGEMENT_API, id);
 		// return test type record
-		return new ResponseEntity<>(this.changeService.get(id,depth), HttpStatus.OK);
+		return new ResponseEntity<>(this.changeService.get(id, depth), HttpStatus.OK);
 	}
 
 	/**
@@ -107,8 +108,8 @@ public class ChangeManagementApi {
 	 * <b>Description</b>: Delete test type record.<br>
 	 * 
 	 * @param changeToDelete test type record to delete as
-	 *                         {@link io.github.nishadchayanakhawa.testestimatehub.model.dto.ChangeDTO
-	 *                         ChangeDTO} only id property is required
+	 *                       {@link io.github.nishadchayanakhawa.testestimatehub.model.dto.ChangeDTO
+	 *                       ChangeDTO} only id property is required
 	 * @return status 200 once record is deleted
 	 */
 	@DeleteMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -120,9 +121,21 @@ public class ChangeManagementApi {
 		// return status code 200
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
-	
+
 	@PostMapping(path = "/estimate", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	ResponseEntity<ChangeDTO> estimate(@RequestBody ChangeTypeDTO changeToEstimate) {
-		return new ResponseEntity<>(this.changeService.calculateEstimation(changeToEstimate.getId()),HttpStatus.OK);
+		return new ResponseEntity<>(this.changeService.calculateEstimation(changeToEstimate.getId()), HttpStatus.OK);
+	}
+
+	@PostMapping(path = "/submitEstimationsForReview", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	ResponseEntity<String> submitEstimationsForReview(@RequestBody ChangeTypeDTO changeToReviewEstimates) {
+		this.changeService.submitEstimationsForReview(changeToReviewEstimates.getId());
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@PostMapping(path = "/approveEstimations", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	ResponseEntity<String> approveEstimations(@RequestBody ChangeTypeDTO changeToReviewEstimates) {
+		this.changeService.approveEstimations(changeToReviewEstimates.getId());
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 }

@@ -175,6 +175,10 @@
 							</div>
 						</div>
 					</div>
+					<hr>
+					<button class="btn btn-primary mt-2 ms-2" id="submitForReviewButton">
+						Submit For Review
+					</button>
 				</div>
 			</div>
 		</div>
@@ -185,8 +189,7 @@
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h1 class="modal-title fs-5" id="deleteConfirmationModalLabel">Delete User
-						Record</h1>
+					<h1 class="modal-title fs-5" id="deleteConfirmationModalLabel">Delete Use Case</h1>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
@@ -365,9 +368,10 @@
 		</div>
 	</div>
 
-	<button class="btn btn-primary m-2" id="calculateEstimatesButton">
-		Estimate
+	<button class="btn btn-primary mt-2 ms-2" id="calculateEstimatesButton" th:text="${change.statusCode == 'PENDING_ESTIMATION_REVIEW'} ? 'Calculate Revised Estimates' : 'Calculate Estimates'">
+		Calculate Estimations
 	</button>
+
 </body>
 
 </html>
